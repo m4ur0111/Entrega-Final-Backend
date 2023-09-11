@@ -37,25 +37,59 @@
 
     <h1>Listado de Productos</h1>
 
-        {{#if productos.length}}
-            <div class="productos">
-                {{#each productos}}
-                <div class="producto">
-                    <img class="producto-imagen" src="{{imagen}}" alt="Imagen del producto">
-                    <div class="producto-info">
-                        <h3 class="producto-nombre">{{nombre}}</h3>
-                        <p class="producto-descripcion">{{descripcion}}</p>
-                        <p class="producto-precio">Precio: ${{precio}}</p>
-                        <p class="producto-categoria">Categoría: {{categoria}}</p>
-                        <button class="agregar-carrito" data-producto-id="{{_id}}">Agregar al carrito</button>
-                    </div>
+    <!-- Agrega botones para la paginación y filtros -->
+    <div class="pagination-controls">
+        <button onclick="changePage(1)">Primera</button>
+        <button onclick="changePage({{pagination.prevPage}})">Anterior</button>
+        <span class="current-page">Página {{pagination.page}} de {{pagination.totalPages}}</span>
+        <button onclick="changePage({{pagination.nextPage}})">Siguiente</button>
+        <button onclick="changePage({{pagination.totalPages}})">Última</button>
+    </div>
+
+    <!-- Agrega un formulario para los filtros con estilos -->
+    <form id="filter-form" class="filter-form">
+        <div class="filter-options">
+            <select name="sort" class="filter-select">
+            <option value="asc">Ordenar Ascendente</option>
+            <option value="desc">Ordenar Descendente</option>
+            </select>
+            <input type="text" name="query" class="filter-input" placeholder="Buscar por categoría">
+            <input type="number" name="minPrice" class="filter-input" placeholder="Precio mínimo">
+            <input type="number" name="maxPrice" class="filter-input" placeholder="Precio máximo">
+        </div>
+        <button type="submit" class="filter-button">Filtrar</button>
+    </form>
+
+    {{#if productos.length}}
+        <div class="productos">
+            {{#each productos}}
+            <div class="producto">
+                <img class="producto-imagen" src="{{imagen}}" alt="Imagen del producto">
+                <div class="producto-info">
+                    <h3 class="producto-nombre">{{nombre}}</h3>
+                    <p class="producto-descripcion">{{descripcion}}</p>
+                    <p class="producto-precio">Precio: ${{precio}}</p>
+                    <p class="producto-categoria">Categoría: {{categoria}}</p>
+                    <button class="agregar-carrito" data-producto-id="{{_id}}">Agregar al carrito</button>
                 </div>
-                {{/each}}
             </div>
-        {{else}}
-        <p>No se encontraron productos disponibles.</p>
-        {{/if}}
+            {{/each}}
+        </div>
+    {{else}}
+    <p>No se encontraron productos disponibles.</p>
+    {{/if}}
+
+    <!-- Agrega botones para la paginación y filtros -->
+    <div class="pagination-controls">
+        <button onclick="changePage(1)">Primera</button>
+        <button onclick="changePage({{pagination.prevPage}})">Anterior</button>
+        <span class="current-page">Página {{pagination.page}} de {{pagination.totalPages}}</span>
+        <button onclick="changePage({{pagination.nextPage}})">Siguiente</button>
+        <button onclick="changePage({{pagination.totalPages}})">Última</button>
+    </div>
 
         <script src="./js/add-cart.js"></script>
+        <!-- Agrega tu script JavaScript al final del archivo -->
+        <script src="./js/filter.js"></script>
 </body>
 </html>

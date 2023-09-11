@@ -6,14 +6,14 @@ const productoEnCarritoSchema = new mongoose.Schema({
     producto: { type: mongoose.Schema.Types.ObjectId, ref: 'Producto' },
     cantidad: Number,
     precioUnitario: Number,
-    nombre: String, // Agrega el nombre del producto
-    imagen: String, // Agrega la URL o nombre de la imagen del producto
+    nombre: String, 
+    imagen: String, 
 });
 
 
 const carritoSchema = new mongoose.Schema({
     usuario: { type: mongoose.Schema.Types.ObjectId, ref: 'Usuario' },
-    productos: [productoEnCarritoSchema], // Utiliza un array de objetos
+    productos: [productoEnCarritoSchema], 
     total: Number,
 });
 

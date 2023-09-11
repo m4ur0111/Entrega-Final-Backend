@@ -3,18 +3,38 @@ const router = express.Router();
 const Producto = require('../models/products.models');
 const { requireLogin } = require('../middleware/authMiddleware');
 
-//Ruta GET para obtener los productos
+// Ruta para obtener los productos con variables
 router.get('/products', requireLogin, async (req, res) => {
     try {
-        // Obtén todos los productos de la base de datos
-        const productos = await Producto.find();
+        const { limit = 10, page = 1, sort, query, minPrice, maxPrice } = req.query;
 
-        // Renderiza la vista 'home' y pasa los productos como variable
-        res.render('products', { productos });
-    } catch (error) {
+        const options = {
+            page: parseInt(page),
+            limit: parseInt(limit),
+            sort: sort === 'desc' ? { precio: -1 } : sort === 'asc' ? { precio: 1 } : null,
+        };
+
+        const queryOptions = {};
+        
+        if (query) {
+            queryOptions.categoria = query;
+        }
+
+        if (minPrice) {
+            queryOptions.precio = { $gte: parseFloat(minPrice) };
+        }
+
+        if (maxPrice) {
+            queryOptions.precio = { ...queryOptions.precio, $lte: parseFloat(maxPrice) };
+        }
+
+        const result = await Producto.paginate(queryOptions, options);
+
+        res.render('products', { productos: result.docs, pagination: result });
+        } catch (error) {
         console.error('Error en el servidor:', error);
         res.status(500).json({ mensaje: 'Error en el servidor' });
-    }
+        }
 });
 
 //Ruta get para la pagina agregar producto

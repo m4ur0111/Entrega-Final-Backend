@@ -68,6 +68,13 @@
     text-align: center;
 }
 
+.titulo-destacados{
+    font-size: 38px;
+    font-weight: 300;
+    text-align: center;
+    padding: 1.5rem;
+}
+
 .productos {
     display: flex;
     flex-wrap: wrap;
@@ -152,4 +159,29 @@
 
 .agregar-carrito:hover {
     background-color: #0056b3;
+}
+
+/* Estilos para los botones de paginación */
+.pagination-controls {
+    margin-top: 50px;
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.pagination-controls button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    margin: 0 5px;
+    cursor: pointer;
+}
+
+.pagination-controls button:hover {
+    background-color: #0056b3;
+}
+
+/* Estilos para la página actual */
+.current-page {
+    font-weight: bold;
 }

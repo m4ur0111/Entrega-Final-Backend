@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Producto = require('../models/products.models');
-const Carrito = require('../models/cart.models');
+const Carrito = require('../models/cart.model');
 const Order = require('../models/order.model');
 const { requireLogin } = require('../middleware/authMiddleware');
 
@@ -11,22 +11,17 @@ router.post('/agregar-al-carrito/:productoId', async (req, res) => {
         const productoId = req.params.productoId;
         const userId = req.session.userId;
 
-        // Busca el carrito del usuario o crea uno nuevo si no existe
         let carrito = await Carrito.findOne({ usuario: userId });
 
         if (!carrito) {
             carrito = await Carrito.create({ usuario: userId, productos: [], total: 0 });
         }
 
-        // Verifica si el producto ya está en el carrito
         const productoEnCarrito = carrito.productos.find((item) => item.producto.equals(productoId));
 
-        // Verifica si el producto ya está en el carrito
         if (productoEnCarrito) {
-            // Si el producto ya está en el carrito, aumenta la cantidad en lugar de duplicar
             productoEnCarrito.cantidad += 1;
         } else {
-            // Recupera el producto que estás agregando para obtener su precio
             const producto = await Producto.findById(productoId);
 
             if (producto) {
@@ -34,15 +29,14 @@ router.post('/agregar-al-carrito/:productoId', async (req, res) => {
             }
         }
 
-        // Actualiza el total del carrito
+        //Actualiza el total del carrito
         carrito.total = carrito.productos.reduce((total, item) => {
             return total + (item.cantidad * item.precioUnitario);
         }, 0);
 
-        // Guarda el carrito actualizado
         await carrito.save();
 
-        res.redirect('/'); // Redirige al usuario a la página de inicio u otra página
+        res.redirect('/');
     } catch (error) {
         console.error('Error en el servidor:', error);
         res.status(500).json({ mensaje: 'Error en el servidor' });
@@ -52,22 +46,17 @@ router.post('/agregar-al-carrito/:productoId', async (req, res) => {
 // Ruta GET para la página de carrito
 router.get('/cart', requireLogin, async (req, res) => {
     try {
-        const userId = req.session.userId; // Obtén la ID del usuario actual
-        // Busca el carrito del usuario utilizando su ID
+        const userId = req.session.userId;
         const carrito = await Carrito.findOne({ usuario: userId });
 
-        // Si no hay carrito o el carrito está vacío, muestra el mensaje de "No hay productos en el carrito."
         if (!carrito || carrito.productos.length === 0) {
             return res.render('cart', { carrito: null, detallesDelCarrito: [] });
         }
 
-        // Obtén las ID de los productos en el carrito
         const productoIds = carrito.productos.map(item => item.producto);
 
-        // Realiza una consulta a la base de datos para obtener los detalles de los productos
         const detallesDelCarrito = await Producto.find({ _id: { $in: productoIds } });
 
-        // Renderiza la vista 'cart' y pasa el carrito y los detalles como variables
         res.render('cart', { carrito, detallesDelCarrito });
 
     } catch (error) {
@@ -77,7 +66,7 @@ router.get('/cart', requireLogin, async (req, res) => {
 });
 
 router.get('/completado', requireLogin, async (req, res) => {
-    res.render('buy-complete'); // Debe renderizar la vista de confirmación de compra
+    res.render('buy-complete');
 })
 
 // Ruta para finalizar la compra y mostrar la confirmación
@@ -90,7 +79,7 @@ router.post('/finalizar-compra', async (req, res) => {
             return res.status(400).json({ message: 'El carrito está vacío' });
         }
 
-        // Crea una nueva orden utilizando el modelo Order
+        //Crea una nueva orden utilizando el modelo Order
         const nuevaOrden = new Order({
             usuario: userId,
             productos: carrito.productos,
@@ -98,15 +87,13 @@ router.post('/finalizar-compra', async (req, res) => {
             estado: 'aprobado',
         });
 
-        // Guarda la nueva orden en la base de datos
         await nuevaOrden.save();
 
-        // Limpia el carrito
+        //Limpia el carrito
         carrito.productos = [];
         carrito.total = 0;
         await carrito.save();
-    
-        // Redirige al usuario a la página de confirmación de compra
+
         res.status(201).json({ message: 'Compra completada con éxito', OrderId: nuevaOrden._id });
 
     } catch (error) {
@@ -118,15 +105,80 @@ router.post('/finalizar-compra', async (req, res) => {
 // Ruta DELETE para limpiar el carrito
 router.delete('/limpiar-carrito', async (req, res) => {
     try {
-        const userId = req.session.userId; // Obtén la ID del usuario actual
+        const userId = req.session.userId;
 
-        // Busca el carrito del usuario utilizando su ID y elimínalo
         await Carrito.deleteOne({ usuario: userId });
 
-        res.status(204).send(); // Respuesta exitosa sin contenido (204 No Content)
+        res.status(204).send();
     } catch (error) {
         console.error('Error en el servidor:', error);
         res.status(500).json({ mensaje: 'Error en el servidor' });
+    }
+});
+
+// Ruta para eliminar un producto del carrito por su ID
+router.delete('/cart/deleteId/:productId', requireLogin, async (req, res) => {
+    try {
+        const userId = req.session.userId;
+        const productId = req.params.productId;
+        console.log('productId:', productId);
+
+        const carrito = await Carrito.findOne({ usuario: userId });
+
+        if (!carrito) {
+            // Si el carrito no se encuentra, envía una respuesta de error
+            return res.status(404).json({ success: false, mensaje: 'Carrito no encontrado' });
+        }
+
+        const productoEnCarrito = carrito.productos.find((item) => item.producto.equals(productId));
+
+        if (!productoEnCarrito) {
+            return res.status(404).json({ success: false, mensaje: 'Producto no encontrado en el carrito' });
+        }
+
+        const precioProductoAEliminar = productoEnCarrito.precioUnitario * productoEnCarrito.cantidad;
+        carrito.total -= precioProductoAEliminar;
+
+        const productIndex = carrito.productos.findIndex(product => product.producto.toString() === productId);
+
+        carrito.productos.splice(productIndex, 1);
+
+        await carrito.save();
+
+        res.json({ success: true, mensaje: 'Producto eliminado del carrito con éxito' });
+    } catch (error) {
+        console.error('Error en el servidor:', error);
+        res.status(500).json({ success: false, mensaje: 'Error en el servidor' });
+    }
+});
+
+// Ruta PUT para actualizar la cantidad de un producto en el carrito
+router.put('/cart/update-quantity/:productId', requireLogin, async (req, res) => {
+    try {
+        const userId = req.session.userId;
+        const productId = req.params.productId;
+        const newQuantity = req.body.newQuantity; // Obtiene la nueva cantidad desde el cuerpo de la solicitud
+
+        const carrito = await Carrito.findOne({ usuario: userId });
+
+        const productoEnCarrito = carrito.productos.find((item) => item.producto.equals(productId));
+
+        if (!productoEnCarrito) {
+            return res.status(404).json({ success: false, mensaje: 'Producto no encontrado en el carrito' });
+        }
+
+        productoEnCarrito.cantidad = newQuantity;
+
+        carrito.total = carrito.productos.reduce((total, item) => {
+            return total + (item.cantidad * item.precioUnitario);
+        }, 0);
+
+        await carrito.save();
+
+        res.json({ success: true, mensaje: 'Cantidad actualizada con éxito' });
+    } catch (error) {
+        console.error('Error en el servidor:', error);
+        res.status(500).json({ success: false, mensaje: 'Error en el servidor' });
     }
 });
 

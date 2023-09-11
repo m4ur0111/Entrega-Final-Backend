@@ -85,6 +85,7 @@ body {
 .producto {
     display: flex;
     align-items: center;
+    gap: 2rem;
     margin-bottom: 20px; /* Espacio entre productos */
 }
 
@@ -189,4 +190,29 @@ body {
 
 .eliminar-producto-btn:hover {
     background-color: #ff4136; /* Cambia el color de fondo al pasar sobre el botón */
+}
+
+.cantidad-input {
+    width: 40px; /* Ancho del campo de cantidad */
+    height: 30px; /* Altura del campo de cantidad */
+    padding: 5px; /* Espaciado interno */
+    font-size: 1rem;
+    border: 1px solid #ccc; /* Borde del campo */
+    border-radius: 5px; /* Bordes redondeados */
+}
+
+/* Estilos para el botón "Actualizar" */
+.actualizar-cantidad-btn {
+    background-color: #007bff; /* Color de fondo del botón (puedes ajustarlo según tus preferencias) */
+    color: white; /* Color del texto del botón */
+    border: none; /* Sin borde */
+    border-radius: 5px; /* Bordes redondeados */
+    padding: 5px 10px; /* Espacio interno alrededor del contenido del botón */
+    cursor: pointer; /* Cambia el cursor al pasar sobre el botón */
+    font-size: 14px; /* Tamaño de fuente */
+    margin-left: 10px; /* Espacio entre el campo de cantidad y el botón "Actualizar" */
+}
+
+.actualizar-cantidad-btn:hover {
+    background-color: #095eb9; /* Cambia el color de fondo al pasar sobre el botón */
 }

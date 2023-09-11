@@ -46,13 +46,13 @@
             <div class="producto-info">
                 <!-- Información del producto a la derecha -->
                 <h3 class="producto-nombre">{{this.nombre}}</h3>
-                <p class="producto-precio">{{this._id}}</p>
                 <p class="producto-precio">Precio: ${{this.precioUnitario}}</p>
-                <p class="producto-cantidad">Cantidad: {{this.cantidad}}</p>
+                <input type="number" class="cantidad-input" value="{{this.cantidad}}" min="1">
+                <!-- Agrega un botón de "Actualizar" con el ID del producto como atributo de datos -->
+                <button class="actualizar-cantidad-btn" data-product-id="{{this.producto}}">Actualizar</button>
                 <button class="eliminar-producto-btn" data-product-id="{{this._id}}">
                     <i class="fas fa-trash"></i> Eliminar
                 </button>
-                <!-- Puedes agregar otros detalles del producto aquí -->
             </div>
             </div>
             {{/each}}
@@ -73,5 +73,6 @@
         <script src="./js/delete-cart.js"></script>
         <script src="./js/delete-product.js"></script>
         <script src="./js/buy-complete.js"></script>
+        <script src="./js/update-cart.js"></script>
 </body>
 </html>
