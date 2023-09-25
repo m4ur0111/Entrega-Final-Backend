@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const path = require('path');
@@ -24,7 +25,7 @@ app.use(cookieParser());
 
 //Configuración de express-session
 app.use(session({
-    secret: 'clave-secreta-de-mis-cookies', 
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
 }));
@@ -33,7 +34,7 @@ app.use(session({
 initializePassport();
 
 //Conexion a la base de datos
-mongoose.connect('mongodb+srv://mauro:admin519070@ecommerce.w3ewem0.mongodb.net/ecommerce', {
+mongoose.connect(process.env.MONGODB_URI, {
 }).then(() => {
     console.log("Conectado a la base de datos")
 }).catch(error => {
