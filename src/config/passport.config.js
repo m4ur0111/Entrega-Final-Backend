@@ -1,6 +1,6 @@
 const passport = require('passport');
 const GitHubStrategy = require('passport-github2');
-const userService = require('../models/user.model').userModel; // Importa el modelo de usuario correctamente.
+const userService = require('../models/user.model').userModel; 
 
 const initializePassport = () => {
     passport.use(
@@ -17,11 +17,11 @@ const initializePassport = () => {
                 let user = await userService.findOne({ email: profile._json.email });
                 if (!user) {
                     let newUser = {
-                        nombre: profile._json.name, // Ajusta los campos según tu modelo de usuario.
+                        nombre: profile._json.name,
                         apellido: '',
                         edad: 18,
                         email: profile._json.email,
-                        pass: '', // Asegúrate de establecer la contraseña de manera segura.
+                        pass: '', 
                     };
                     let result = await userService.create(newUser);
                     done(null, result);
@@ -34,16 +34,17 @@ const initializePassport = () => {
         }
         )
     );
+
+    passport.serializeUser((user, done) => {
+        done(null, user._id); 
+    });
+    
+    passport.deserializeUser(async (id, done) => {
+        let user = await userService.findById(id);
+        done(null, user);
+    });
+    
 };
-
-passport.serializeUser((user, done) => {
-    done(null, user._id); // Utiliza el ID del usuario en la base de datos
-});
-
-passport.deserializeUser(async (id, done) => {
-    let user = await userService.findById(id);
-    done(null, user);
-});
 
 
 module.exports = initializePassport;

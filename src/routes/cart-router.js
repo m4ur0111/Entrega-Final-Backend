@@ -125,14 +125,12 @@ router.delete('/limpiar/:productId', requireLogin, async (req, res) => {
 
         const carrito = await Carrito.findOne({ usuario: userId });
 
-        console.log("1");
         if (!carrito) {
             // Si el carrito no se encuentra, envía una respuesta de error
             return res.status(404).json({ success: false, mensaje: 'Carrito no encontrado' });
         }
 
-        console.log("2");
-        const productoEnCarrito = carrito.productos.find((item) => item.producto.equals(productId));
+        const productoEnCarrito = carrito.productos.find((item) => item._id == productId);
 
         if (!productoEnCarrito) {
             return res.status(404).json({ success: false, mensaje: 'Producto no encontrado en el carrito' });
@@ -144,7 +142,6 @@ router.delete('/limpiar/:productId', requireLogin, async (req, res) => {
         const productIndex = carrito.productos.findIndex(product => product.producto.toString() === productId);
 
         carrito.productos.splice(productIndex, 1);
-        console.log("3");
 
         await carrito.save();
 

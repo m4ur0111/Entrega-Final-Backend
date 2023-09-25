@@ -92,14 +92,4 @@ router.get('/logout', (req, res) => {
     });
 });
 
-router.get('/github', passport.authenticate('github'));
-
-router.get(
-    '/sessions/githubcallback',
-    passport.authenticate('github', {
-        failureRedirect: '/login', 
-        successRedirect: '/', 
-    })
-);
-
 module.exports = router;

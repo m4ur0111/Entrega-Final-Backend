@@ -45,11 +45,13 @@ const indexRoutes = require('./routes/index.router');
 const usersRoutes = require('./routes/users.router');
 const productRoutes = require('./routes/products.router');
 const cartRoutes = require('./routes/cart-router');
+const sessionRoutes = require('./routes/session.router');
 
 app.use('/', indexRoutes);
 app.use('/', usersRoutes);
 app.use('/', productRoutes);
 app.use('/', cartRoutes);
+app.use('/', sessionRoutes);
 
 //Iniciar el servidor 
 http.listen(PORT, () => {
