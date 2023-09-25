@@ -1,5 +1,7 @@
 const express = require('express');
 const { userModel } = require('../models/user.model');
+const bcrypt = require('bcryptjs');
+const passport = require('passport');
 const router = express.Router();
 
 //Ruta GET para renderizar la pagina register
@@ -10,7 +12,7 @@ router.get('/register', (req, res) => {
 //Ruta POST para agregar un usuario
 router.post('/register', async (req, res) => {
     try {
-        const { nombre, email, pass } = req.body;
+        const { nombre, apellido, edad, email, pass } = req.body;
 
         console.log('Nuevo intento de registro:', nombre, email);
 
@@ -22,10 +24,15 @@ router.post('/register', async (req, res) => {
 
         console.log('Registrando nuevo usuario:', nombre, email);
 
+        // Encriptar la contraseña antes de guardarla en la base de datos
+        const hashedPass = await bcrypt.hash(pass, 10); //"10" es el número de rondas de encriptación
+
         const nuevoUsuario = new userModel({
             nombre,
+            apellido, 
+            edad,
             email,
-            pass,
+            pass: hashedPass, // Guarda la contraseña encriptada
         });
 
         await nuevoUsuario.save();
@@ -55,11 +62,13 @@ router.post('/login', async (req, res) => {
             return res.status(400).json({ mensaje: 'Usuario no encontrado' });
         }
 
-        if (usuario.pass !== pass) {
+        // Compara la contraseña ingresada con la contraseña almacenada en la base de datos
+        const isPasswordValid = await bcrypt.compare(pass, usuario.pass);
+        if (!isPasswordValid) {
             return res.status(400).json({ mensaje: 'Contraseña incorrecta' });
         }
 
-        //Almaceno el ID del usuario en la sesión
+        // Almaceno el ID del usuario en la sesión
         req.session.userId = usuario._id;
         
         res.redirect('/');
@@ -82,5 +91,15 @@ router.get('/logout', (req, res) => {
         res.redirect('/login');
     });
 });
+
+router.get('/github', passport.authenticate('github'));
+
+router.get(
+    '/sessions/githubcallback',
+    passport.authenticate('github', {
+        failureRedirect: '/login', 
+        successRedirect: '/', 
+    })
+);
 
 module.exports = router;

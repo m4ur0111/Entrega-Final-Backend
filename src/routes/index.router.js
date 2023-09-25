@@ -7,8 +7,8 @@ const { getUserRoleFromDatabase } = require('../utils/function');
 
 router.get('/', requireLogin, async (req, res) => {
     try {
-        const page = parseInt(req.query.page) || 1; //Obtengo el número de página de los parámetros de consulta
-        const limit = 5; //Establece el límite de productos por página a 5
+        const page = parseInt(req.query.page) || 1; 
+        const limit = 5; 
 
         const startIndex = (page - 1) * limit;
 
@@ -32,7 +32,6 @@ router.get('/', requireLogin, async (req, res) => {
             message = '¡Bienvenido, usuario!';
         }
 
-        //Calculo el número total de páginas en función del total de productos y el límite por página
         const totalPages = Math.ceil(totalProducts / limit);
 
         res.render('home', {

@@ -117,7 +117,7 @@ router.delete('/limpiar-carrito', async (req, res) => {
 });
 
 // Ruta para eliminar un producto del carrito por su ID
-router.delete('/cart/deleteId/:productId', requireLogin, async (req, res) => {
+router.delete('/limpiar/:productId', requireLogin, async (req, res) => {
     try {
         const userId = req.session.userId;
         const productId = req.params.productId;
@@ -125,11 +125,13 @@ router.delete('/cart/deleteId/:productId', requireLogin, async (req, res) => {
 
         const carrito = await Carrito.findOne({ usuario: userId });
 
+        console.log("1");
         if (!carrito) {
             // Si el carrito no se encuentra, envía una respuesta de error
             return res.status(404).json({ success: false, mensaje: 'Carrito no encontrado' });
         }
 
+        console.log("2");
         const productoEnCarrito = carrito.productos.find((item) => item.producto.equals(productId));
 
         if (!productoEnCarrito) {
@@ -142,6 +144,7 @@ router.delete('/cart/deleteId/:productId', requireLogin, async (req, res) => {
         const productIndex = carrito.productos.findIndex(product => product.producto.toString() === productId);
 
         carrito.productos.splice(productIndex, 1);
+        console.log("3");
 
         await carrito.save();
 

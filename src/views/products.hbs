@@ -71,6 +71,9 @@
                     <p class="producto-precio">Precio: ${{precio}}</p>
                     <p class="producto-categoria">Categoría: {{categoria}}</p>
                     <button class="agregar-carrito" data-producto-id="{{_id}}">Agregar al carrito</button>
+                    {{#if ../isAdmin}}
+                        <button class="editar-producto" data-producto-id="{{_id}}"><a href="/product/edit/{{_id}}" class="editar-producto">Editar Producto</a></button>
+                    {{/if}}
                 </div>
             </div>
             {{/each}}

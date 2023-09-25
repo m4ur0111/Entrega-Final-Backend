@@ -4,11 +4,18 @@ const userCollection = "users"
 
 const userSchema = new mongoose.Schema({
     nombre: { type: String, required: true, max: 100 },
+    apellido: { type: String, max: 100 },
+    edad: { type: Number, required: true },
     email: { type: String, required: true, max: 100 },
-    pass: { type: String, required: true, max: 50 },
+    pass: { type: String, max: 50 },
     rol: { type: String, default: 'user' }, //Rol por defecto: 'user'
 });
 
+// Agregar el método personalizado findById
+userSchema.statics.findById = function(id, callback) {
+    return this.findOne({ _id: id }, callback);
+};
+
 const userModel = mongoose.model(userCollection, userSchema);
 
-module.exports = {userModel};
+module.exports = { userModel };

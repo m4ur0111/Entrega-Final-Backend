@@ -6,6 +6,8 @@ const http = require('http').createServer(app);
 const io = require('socket.io')(http);
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
+const passport = require('passport');
+const initializePassport = require('./config/passport.config');
 
 //Configuración del puerto
 const PORT = 8080;
@@ -26,6 +28,9 @@ app.use(session({
     resave: false,
     saveUninitialized: true,
 }));
+
+//Inicializo Passport
+initializePassport();
 
 //Conexion a la base de datos
 mongoose.connect('mongodb+srv://mauro:admin519070@ecommerce.w3ewem0.mongodb.net/ecommerce', {

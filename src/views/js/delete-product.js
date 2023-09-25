@@ -1,21 +1,34 @@
-$(document).ready(function () {
-    $('.eliminar-producto-btn').on('click', function () {
-        const productId = $(this).data('product-id'); 
-        
-        $.ajax({
-            type: 'DELETE',
-            url: '/cart/deleteId/' + productId,
-            data: { productId },
-            success: function (data) {
+document.addEventListener('DOMContentLoaded', () => {
+    const eliminarProductoBtns = document.querySelectorAll('.eliminar-producto-btn');
+    
+    eliminarProductoBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const productId = btn.getAttribute('data-product-id');
+            
+            fetch('/limpiar/' + productId, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ productId })
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('Error al eliminar el producto del carrito.');
+                }
+            })
+            .then(data => {
                 if (data.success) {
-                    location.reload(); 
+                    window.location.reload();
                 } else {
                     alert('Error al eliminar el producto del carrito.');
                 }
-            },
-            error: function () {
-                alert('Error de conexión al servidor.');
-            }
+            })
+            .catch(error => {
+                console.error('Error en la solicitud:', error);
+            });
         });
     });
 });
