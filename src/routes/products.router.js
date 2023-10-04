@@ -104,4 +104,23 @@ router.post('/product/edit/:id', async (req, res) => {
     }
 });
 
+router.get('/product/:_id', async (req, res) => {
+    const productId = req.params._id;
+
+    // Busca el producto por su ID en la base de datos
+    const product = await Producto.findById(productId);
+
+    if (!product) {
+        // Maneja el caso en el que el producto no se encuentra
+        return res.status(404).render('404');
+    }
+
+    // Establece la cookie con la categoría del producto visitado
+    res.cookie('selectedCategory', product.categoria, { maxAge: 1800000 }); // 30 minutos de duración
+
+    // Renderiza la página de detalle de producto y pasa los datos del producto
+    res.render('product-detail', { product });
+});
+
+
 module.exports = router;

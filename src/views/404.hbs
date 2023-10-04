@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {{!-- Link de Lottie Files --}}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.7.7/lottie.min.js"></script>
+    {{!-- Link de CSS --}}
+    <link rel="stylesheet" href="./styles/404.css">
+    <title>Página no Encontrada</title>
+</head>
+<body>
+    <h1 class="titulo">Página no Encontrada</h1>
+    <div id="animation-container"></div>
+    <script>
+        const container = document.getElementById('animation-container');
+        const anim = lottie.loadAnimation({
+            container: container,
+            renderer: 'svg',
+            loop: true,
+            autoplay: true,
+            path: './assets/404.json'
+        });
+    </script>
+    <button><a href="/" class="boton-inicio">Volver al Inicio</a></button>
+</body>
+</html>

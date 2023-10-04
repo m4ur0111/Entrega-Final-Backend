@@ -1,7 +1,6 @@
 const express = require('express');
 const { userModel } = require('../models/user.model');
 const bcrypt = require('bcryptjs');
-const passport = require('passport');
 const router = express.Router();
 
 //Ruta GET para renderizar la pagina register
@@ -14,15 +13,13 @@ router.post('/register', async (req, res) => {
     try {
         const { nombre, apellido, edad, email, pass } = req.body;
 
-        console.log('Nuevo intento de registro:', nombre, email);
+        //console.log('Nuevo intento de registro:', nombre, email);
 
         const usuarioExistente = await userModel.findOne({ email });
         if (usuarioExistente) {
             console.log('Usuario ya existe:', email);
             return res.status(400).json({ mensaje: 'El usuario ya existe' });
         }
-
-        console.log('Registrando nuevo usuario:', nombre, email);
 
         // Encriptar la contraseña antes de guardarla en la base de datos
         const hashedPass = await bcrypt.hash(pass, 10); //"10" es el número de rondas de encriptación

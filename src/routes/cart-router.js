@@ -19,17 +19,27 @@ router.post('/agregar-al-carrito/:productoId', async (req, res) => {
 
         const productoEnCarrito = carrito.productos.find((item) => item.producto.equals(productoId));
 
+        // Obtén la cantidad enviada desde el cliente
+        const cantidadDesdeCliente = parseInt(req.body.quantity);
+
         if (productoEnCarrito) {
-            productoEnCarrito.cantidad += 1;
+            // Si el producto ya está en el carrito, actualiza su cantidad
+            productoEnCarrito.cantidad += cantidadDesdeCliente;
         } else {
             const producto = await Producto.findById(productoId);
 
             if (producto) {
-                carrito.productos.push({ producto: productoId, cantidad: 1, precioUnitario: producto.precio, nombre: producto.nombre, imagen: producto.imagen });
+                carrito.productos.push({
+                    producto: productoId,
+                    cantidad: cantidadDesdeCliente, 
+                    precioUnitario: producto.precio,
+                    nombre: producto.nombre,
+                    imagen: producto.imagen
+                });
             }
         }
 
-        //Actualiza el total del carrito
+        // Actualiza el total del carrito
         carrito.total = carrito.productos.reduce((total, item) => {
             return total + (item.cantidad * item.precioUnitario);
         }, 0);

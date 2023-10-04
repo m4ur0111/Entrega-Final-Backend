@@ -110,18 +110,18 @@ h1 {
     color: #666;
 }
 
-.agregar-carrito {
-    background-color: #0074D9;
-    color: white;
-    border: none;
-    padding: 5px 10px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
+.product-detail-link {
+    background-color: #007bff; /* Color de fondo */
+    color: #fff; /* Color del texto */
+    text-decoration: none; /* Quita la subrayado del enlace */
+    padding: 8px 16px; /* Espacio interno del botón */
+    border-radius: 4px; /* Bordes redondeados */
+    transition: background-color 0.3s ease; /* Transición suave del color de fondo */
+    display: inline-block; /* Hace que el botón ocupe solo el espacio necesario */
 }
 
-.agregar-carrito:hover {
-    background-color: #0056b3;
+.product-detail-link:hover {
+    background-color: #0056b3; /* Cambia el color de fondo al pasar el mouse sobre el botón */
 }
 
 p {

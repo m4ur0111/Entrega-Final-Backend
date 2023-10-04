@@ -7,7 +7,6 @@ const http = require('http').createServer(app);
 const io = require('socket.io')(http);
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
-const passport = require('passport');
 const initializePassport = require('./config/passport.config');
 
 //Configuración del puerto
@@ -28,6 +27,12 @@ app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
+    cookie: {
+        maxAge: 1000 * 60 * 30,
+        secure: false,
+        httpOnly: true, 
+        sameSite: 'strict',
+    }
 }));
 
 //Inicializo Passport
@@ -53,6 +58,9 @@ app.use('/', usersRoutes);
 app.use('/', productRoutes);
 app.use('/', cartRoutes);
 app.use('/', sessionRoutes);
+app.use('*', async (req, res) => {
+    res.render('404'); // Renderiza la vista 404.hbs
+});
 
 //Iniciar el servidor 
 http.listen(PORT, () => {

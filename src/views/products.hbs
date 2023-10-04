@@ -70,7 +70,8 @@
                     <p class="producto-descripcion">{{descripcion}}</p>
                     <p class="producto-precio">Precio: ${{precio}}</p>
                     <p class="producto-categoria">Categoría: {{categoria}}</p>
-                    <button class="agregar-carrito" data-producto-id="{{_id}}">Agregar al carrito</button>
+                    {{!-- <button class="agregar-carrito" data-producto-id="{{_id}}">Agregar al carrito</button> --}}
+                    <a href="/product/{{_id}}" class="product-detail-link">Ver Detalles</a>
                     {{#if ../isAdmin}}
                         <button class="editar-producto" data-producto-id="{{_id}}"><a href="/product/edit/{{_id}}" class="editar-producto">Editar Producto</a></button>
                     {{/if}}
@@ -91,8 +92,7 @@
         <button onclick="changePage({{pagination.totalPages}})">Última</button>
     </div>
 
-        <script src="./js/add-cart.js"></script>
-        <!-- Agrega tu script JavaScript al final del archivo -->
-        <script src="./js/filter.js"></script>
+    
+    <script src="./js/filter.js"></script>
 </body>
 </html>

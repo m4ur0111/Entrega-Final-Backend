@@ -1,5 +1,6 @@
 const passport = require('passport');
 const GitHubStrategy = require('passport-github2');
+const LocalStrategy = require('passport-local').Strategy;
 const userService = require('../models/user.model').userModel; 
 
 const initializePassport = () => {
