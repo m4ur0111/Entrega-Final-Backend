@@ -1,14 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const passport = require('passport');
+const githubController = require('../controllers/session.controller');
 
-router.get('/github', passport.authenticate('github',{scope:['user:email']}),async(req, res) => {
+// Ruta GET para iniciar la autenticación de GitHub
+router.get('/github', githubController.authenticateWithGitHub);
 
-})
-
-router.get('/sessions/githubcallback', passport.authenticate('github',{failureRedirect:'/login'}),async(req, res) => {
-    req.session.userId = req.user._id;
-    res.redirect('/');
-})
+// Ruta GET para la devolución de llamada de autenticación de GitHub
+router.get('/sessions/githubcallback', githubController.handleGitHubCallback);
 
 module.exports = router;
