@@ -1,3 +1,4 @@
+const productDao = require('../dao/products.dao');
 const Producto = require('../models/products.models');
 
 //Ruta GET para obtener los productos con variables
@@ -44,7 +45,7 @@ async function addProduct(req, res) {
     try {
         const nuevoProducto = req.body; // Aquí asumimos que los datos del nuevo producto se envían en el cuerpo de la solicitud
         
-        const productoCreado = await Producto.create(nuevoProducto);
+        const productoCreado = await productDao.createProduct(nuevoProducto);
         
         // Redirige al usuario a la página de inicio después de crear el producto
         res.redirect('/products');
@@ -58,11 +59,9 @@ async function addProduct(req, res) {
 async function renderEditProductPage(req, res) {
     try {
         const productId = req.params.id;
-        // Busca el producto en la base de datos por su ID
-        const producto = await Producto.findById(productId);
+        const producto = await productDao.findProductById(productId);
 
         if (!producto) {
-            // Si no se encuentra el producto, puedes manejarlo de acuerdo a tus necesidades
             return res.status(404).send('Producto no encontrado');
         }
 
@@ -78,18 +77,11 @@ async function renderEditProductPage(req, res) {
 async function editProduct(req, res) {
     try {
         const productId = req.params.id;
-        const { nombre, descripcion, precio, categoria, stock, imagen } = req.body;
-        const disponibilidad = req.body.disponible === 'on'; // Convierte el valor a un booleano
-
-        // Busca el producto en la base de datos por su ID y actualiza todas sus propiedades
-        const productoActualizado = await Producto.findByIdAndUpdate(
-            productId,
-            { nombre, descripcion, precio, categoria, stock, imagen, disponibilidad },
-            { new: true } // Devuelve el producto actualizado
-        );
+        const updatedProductData = req.body;
+        
+        const productoActualizado = await productDao.updateProduct(productId, updatedProductData);
 
         if (!productoActualizado) {
-            // Si no se encuentra el producto o no se puede actualizar, puedes manejarlo
             return res.status(404).send('Producto no encontrado o no se pudo actualizar');
         }
 
