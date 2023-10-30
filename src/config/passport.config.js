@@ -1,6 +1,5 @@
 const passport = require('passport');
 const GitHubStrategy = require('passport-github2');
-const LocalStrategy = require('passport-local').Strategy;
 const userService = require('../models/user.model').userModel; 
 
 const initializePassport = () => {
@@ -14,7 +13,8 @@ const initializePassport = () => {
         },
         async (accessToken, refreshToken, profile, done) => {
             try {
-                // console.log(profile);
+                // console.log(profile)
+            
                 let user = await userService.findOne({ email: profile._json.email });
                 if (!user) {
                     let newUser = {
@@ -46,6 +46,5 @@ const initializePassport = () => {
     });
     
 };
-
 
 module.exports = initializePassport;

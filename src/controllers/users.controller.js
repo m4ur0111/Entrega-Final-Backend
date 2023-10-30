@@ -53,6 +53,8 @@ async function loginUser(req, res) {
         }
 
         req.session.userId = usuario._id;
+        req.session.email = email;
+        
         res.redirect('/');
     } catch (error) {
         console.error('Error en el servidor:', error);

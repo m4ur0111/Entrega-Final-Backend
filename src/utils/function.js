@@ -1,4 +1,6 @@
 const { userModel } = require('../models/user.model');
+const Order = require('../models/order.model');
+
 async function getUserRoleFromDatabase(userId) {
     try {
         const user = await userModel.findById(userId);
@@ -14,6 +16,32 @@ async function getUserRoleFromDatabase(userId) {
     }
 }
 
+//Genera un código de ticket único
+async function generateUniqueTicketCode() {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const codeLength = 12;
+    
+    let isUnique = false;
+    let code;
+
+    while (!isUnique) {
+        code = '';
+
+        for (let i = 0; i < codeLength; i++) {
+            const randomIndex = Math.floor(Math.random() * characters.length);
+            code += characters.charAt(randomIndex);
+        }
+
+        // Verificar unicidad del código en la base de datos
+        const existingOrder = await Order.findOne({ 'ticket.code': code });
+        isUnique = !existingOrder; // El código es único si no se encuentra en la base de datos
+    }
+
+    return code;
+}
+
+
 module.exports = {
     getUserRoleFromDatabase,
+    generateUniqueTicketCode,
 };

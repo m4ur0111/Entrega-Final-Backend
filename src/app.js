@@ -10,7 +10,7 @@ const cookieParser = require('cookie-parser');
 const initializePassport = require('./config/passport.config');
 
 //Configuración del puerto
-const PORT = 8080;
+const PORT = process.env.PORT;
 
 //Configuración de Express
 app.set("view engine", "hbs");
@@ -59,7 +59,7 @@ app.use('/', productRoutes);
 app.use('/', cartRoutes);
 app.use('/', sessionRoutes);
 app.use('*', async (req, res) => {
-    res.render('404'); // Renderiza la vista 404.hbs
+    res.render('404'); //Renderiza la vista 404.hbs
 });
 
 //Iniciar el servidor 

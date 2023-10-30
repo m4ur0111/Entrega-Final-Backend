@@ -7,7 +7,10 @@
     {{!-- Link de Google Fonts --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    {{!-- SweetAlert 2 --}}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="https://fonts.googleapis.com/css2?family=Comme:wght@100;200;300;400;500;600;700;800;900&family=Montserrat:wght@100;200;300;400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
         *{
             font-family: 'Montserrat', sans-serif;
@@ -116,6 +119,7 @@
             height: auto;
         }
     </style>
+
 </head>
 <body>
     {{!< layouts/main }}
@@ -183,14 +187,14 @@
 
                         if (response.ok) {
                             // El producto se agregó correctamente al carrito
-                            alert('Producto agregado al carrito');
+                            Swal.fire('Éxito', 'Producto agregado al carrito', 'success');
                         } else {
                             // Maneja el caso en que la solicitud no sea exitosa
-                            alert('No se pudo agregar el producto al carrito');
+                            Swal.fire('Error', 'No se pudo agregar el producto al carrito', 'error');
                         }
                     } catch (error) {
                         console.error('Error:', error);
-                        alert('Error en el servidor');
+                        Swal.fire('Error en el servidor', 'Hubo un problema en el servidor', 'error');
                     }
                 });
             });

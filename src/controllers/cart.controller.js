@@ -2,6 +2,8 @@ const Carrito = require('../models/cart.model');
 const Order = require('../models/order.model');
 const Producto = require('../models/products.models');
 const cartDao = require('../dao/cart.dao');
+const generateCode = require('../utils/function');
+const moment = require('moment-timezone')
 
 //Ruta POST para agregar un producto al carrito
 async function addToCart(req, res) {
@@ -82,6 +84,7 @@ function viewBuyCompletePage(req, res) {
 async function completePurchase(req, res) {
     try {
         const userId = req.session.userId;
+        const purchaserEmail = req.session.email;
 
         const carrito = await cartDao.getCartByUserId(userId);
 
@@ -89,21 +92,61 @@ async function completePurchase(req, res) {
             return res.status(400).json({ message: 'El carrito está vacío' });
         }
 
-        const nuevaOrden = new Order({
-            usuario: userId,
-            productos: carrito.productos,
-            total: carrito.total,
-            estado: 'aprobado',
-        });
+        //Definir el uso horario de Argentina
+        const argentinaTimezone = 'America/Argentina/Buenos_Aires';
+        //Obtener la fecha y hora actual en Argentina
+        const argentinaDateTime = moment.tz(new Date(), argentinaTimezone);
+        // Generar un código de ticket único
+        const uniqueTicketCode = await generateCode.generateUniqueTicketCode();
 
-        await nuevaOrden.save();
+        // Crear un nuevo ticket
+        const nuevoTicket = {
+            code: uniqueTicketCode, // Usar el código generado
+            purchase_datetime: argentinaDateTime.toDate(),
+            purchaser: purchaserEmail, // Asegúrate de que req.user esté definido y tenga el campo 'email'
+        };
 
-        carrito.productos = [];
-        carrito.total = 0;
+        // Crear un arreglo para los IDs de productos no comprados
+        const productosNoComprados = [];
+
+        let nuevaOrden; // Declarar nuevaOrden aquí
+
+        // Recorrer los productos en el carrito
+        for (const productoEnCarrito of carrito.productos) {
+            const producto = await Producto.findById(productoEnCarrito.producto);
+
+            if (producto && producto.stock >= productoEnCarrito.cantidad) {
+                // Si hay suficiente stock, restar del stock del producto y continuar
+                producto.stock -= productoEnCarrito.cantidad;
+                await producto.save();
+
+                // Crear una nueva orden con el producto
+                nuevaOrden = new Order({
+                    usuario: userId,
+                    productos: [productoEnCarrito],
+                    total: productoEnCarrito.precioUnitario * productoEnCarrito.cantidad,
+                    estado: 'aprobado',
+                    ticket: nuevoTicket,
+                });
+
+                await nuevaOrden.save();
+            } else {
+                // Si no hay suficiente stock, agregar el producto al arreglo de no comprados
+                productosNoComprados.push(productoEnCarrito.producto);
+            }
+        }
+
+        // Actualizar el carrito con los productos no comprados
+        carrito.productos = carrito.productos.filter((productoEnCarrito) => !productosNoComprados.includes(productoEnCarrito.producto));
+        carrito.total = carrito.productos.reduce((total, productoEnCarrito) => total + productoEnCarrito.precioUnitario * productoEnCarrito.cantidad, 0);
         await cartDao.updateCart(carrito._id, carrito);
+        console.log(productosNoComprados)
 
-        res.status(201).json({ message: 'Compra completada con éxito', OrderId: nuevaOrden._id });
-
+        if (productosNoComprados.length === 0) {
+            res.status(201).json({ message: 'Compra completada con éxito', OrderId: nuevaOrden._id });
+        } else {
+            res.status(400).json({ message: 'Algunos productos no pudieron procesarse', productosNoComprados });
+        }
     } catch (error) {
         console.error('Error en el servidor:', error);
         res.status(500).json({ message: 'Error en el servidor' });

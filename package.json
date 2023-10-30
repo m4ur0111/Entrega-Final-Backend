@@ -23,6 +23,7 @@
     "hbs": "^4.2.0",
     "jsonwebtoken": "^9.0.2",
     "lottie-web": "^5.12.2",
+    "moment-timezone": "^0.5.43",
     "mongodb": "^6.0.0",
     "mongoose": "^7.5.0",
     "mongoose-paginate-v2": "^1.7.31",
