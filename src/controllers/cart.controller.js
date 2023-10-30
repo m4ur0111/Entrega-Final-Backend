@@ -77,12 +77,7 @@ async function viewCartPage(req, res) {
 
 //Ruta GET para la página de compra completada
 function viewBuyCompletePage(req, res) {
-    const success = req.query.success === 'true'; // Obtiene el indicador de éxito de la URL
-    const productsNotPurchased = JSON.parse(req.query.productsNotPurchased || '[]'); // Obtiene la lista de productos no comprados de la URL
-    const orderId = req.query.orderId; // Obtiene el ID de la orden de la URL
-    const ticketCode = req.query.ticketCode; // Obtiene el código del ticket de la URL
-
-    res.render('buy-complete', { success, productsNotPurchased, orderId, ticketCode });
+    res.render('buy-complete');
 }
 
 //Ruta POST para finalizar la compra
@@ -97,9 +92,9 @@ async function completePurchase(req, res) {
             return res.status(400).json({ message: 'El carrito está vacío' });
         }
 
-        //Definir el uso horario de Argentina
+        // Definir el uso horario de Argentina
         const argentinaTimezone = 'America/Argentina/Buenos_Aires';
-        //Obtener la fecha y hora actual en Argentina
+        // Obtener la fecha y hora actual en Argentina
         const argentinaDateTime = moment.tz(new Date(), argentinaTimezone);
         // Generar un código de ticket único
         const uniqueTicketCode = await generateCode.generateUniqueTicketCode();
@@ -115,6 +110,7 @@ async function completePurchase(req, res) {
         const productosNoComprados = [];
 
         let nuevaOrden; // Declarar nuevaOrden aquí
+        let idOrden;
 
         // Recorrer los productos en el carrito
         for (const productoEnCarrito of carrito.productos) {
@@ -145,21 +141,29 @@ async function completePurchase(req, res) {
         carrito.productos = productosNoComprados;
         carrito.total = carrito.productos.reduce((total, productoEnCarrito) => total + productoEnCarrito.precioUnitario * productoEnCarrito.cantidad, 0);
         await cartDao.updateCart(carrito._id, carrito);
-        console.log(nuevaOrden._id)
 
-        if (productosNoComprados.length === 0 && nuevaOrden && nuevaOrden._id) {
-            // Si todos los productos se compraron con éxito y nuevaOrden._id es válido,
-            // redirige a la página de compra completada con éxito
-            res.redirect('/completado?success=true&id=' + nuevaOrden._id + '&ticketCode=' + nuevoTicket.code);
+        // Mover la inicialización de idOrden aquí
+        idOrden = nuevaOrden && nuevaOrden._id;
+
+        if (productosNoComprados.length === 0 && idOrden) {
+            res.status(201).json({
+                message: 'Compra completada con éxito',
+                OrderId: nuevaOrden._id,
+                success: true,
+                productsNotPurchased: [],
+            });
         } else {
-            // Si hay productos no comprados o nuevaOrden._id no es válido,
-            // redirige a la página de compra completada con un indicador de error y los datos de productos no comprados
-            res.redirect('/completado?success=false&productsNotPurchased=' + JSON.stringify(productosNoComprados) + '&id=' + (nuevaOrden && nuevaOrden._id) + '&ticketCode=' + nuevoTicket.code);
-        }        
-    } catch (error) {
-        console.error('Error en el servidor:', error);
-        res.status(500).json({ message: 'Error en el servidor' });
-    }
+            res.status(201).json({
+                message: 'Algunos productos no fueron comprados por falta de stock',
+                OrderId: nuevaOrden._id,
+                success: false,
+                productsNotPurchased: productosNoComprados,
+            });
+        }
+        } catch (error) {
+            console.error('Error en el servidor:', error);
+            res.status(500).json({ message: 'Error en el servidor' });
+        }
 }
 
 //Ruta DELETE para limpiar el carrito
@@ -181,7 +185,6 @@ async function removeProductFromCart(req, res) {
     try {
         const userId = req.session.userId;
         const productId = req.params.productId;
-        console.log('productId:', productId);
 
         const carrito = await Carrito.findOne({ usuario: userId });
 

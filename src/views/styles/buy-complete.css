@@ -60,17 +60,48 @@ body {
     margin-right: 5px;
 }
 
-.titulo{
-    font-size: 50px;
-    font-weight: 300;
+.titulo {
     text-align: center;
-margin: 2rem;
+    margin-top: 2rem;
+    font-size: 2rem;
 }
 
-h2{
+h2 {
     text-align: center;
-    margin: 2rem;
-    font-weight: 400;
+    margin-top: 1rem;
+    font-size: 1.5rem;
+}
+
+#message {
+    text-align: center;
+    font-size: 1.2rem;
+    margin-top: 1rem;
+}
+
+#notPurchasedList {
+    list-style: none;
+    padding: 0;
+    margin: 1rem auto;
+    width: 80%;
+    max-width: 400px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+#notPurchasedList li {
+    padding: 0.5rem;
+    border-bottom: 1px solid #ddd;
+}
+
+.contenedor-boton {
+    text-align: center;
+    margin-top: 2rem;
+}
+
+button a {
+    text-decoration: none;
+    color: #fff;
 }
 
 button {
