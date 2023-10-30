@@ -33,24 +33,34 @@
             </nav>
         </header>
 
-        <h1 class="titulo">Compra Realizada con exito</h1>
+        <h1 class="titulo">Compra Realizada con éxito</h1>
 
-        <h2>El ID de su orden es: <span id="orderId"></span></h2>
+        <h2>El ID de su orden es: <span id="orderId">{{orderId}}</span></h2>
+
+        {{#if success}}
+            <p>Todos los productos se compraron con éxito.</p>
+        {{else}}
+            <p>Algunos productos no pudieron procesarse:</p>
+            <ul>
+                {{#each productsNotPurchased}}
+                    <li>{{this.nombre}} (Cantidad: {{this.cantidad}})</li>
+                {{/each}}
+            </ul>
+        {{/if}}
 
         <div class="contenedor-boton">
             <button><a href="/">Volver al Inicio</a></button>
         </div>
 
-    <script>
-        // JavaScript para obtener el ID de la orden de la URL y mostrarlo en la página
-        window.addEventListener('DOMContentLoaded', (event) => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const orderId = urlParams.get('id');
-            if (orderId) {
-                document.getElementById('orderId').textContent = orderId;
-            }
-        });
-    </script>
-
+        <script>
+            // JavaScript para obtener el ID de la orden de la URL y mostrarlo en la página
+            window.addEventListener('DOMContentLoaded', (event) => {
+                const urlParams = new URLSearchParams(window.location.search);
+                const orderId = urlParams.get('orderId');
+                if (orderId) {
+                    document.getElementById('orderId').textContent = orderId;
+                }
+            });
+        </script>
 </body>
 </html>
