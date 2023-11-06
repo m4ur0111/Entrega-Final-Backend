@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs');
 const userDao = require('../dao/user.dao');
+const errorHandlers = require('../services/errors/errorHandler');
 
 //Renderizar la página de registro
 function renderRegisterPage(req, res) {
@@ -20,14 +21,14 @@ async function registerUser(req, res) {
         });
 
         if (!usuarioCreado) {
-            return res.status(400).json({ mensaje: 'El usuario ya existe' });
+            errorHandlers.customErrorHandler('usuarioExistente', res); //Manejo de error personalizado
+        } else {
+            console.log('Usuario registrado con éxito:', email);
+            res.redirect('login');
         }
-
-        console.log('Usuario registrado con éxito:', email);
-        res.redirect('login');
     } catch (error) {
         console.error('Error en el servidor:', error);
-        res.status(500).json({ mensaje: 'Error en el servidor' });
+        errorHandlers.customErrorHandler('errorServidor', res); //Manejo de error personalizado
     }
 }
 
@@ -43,22 +44,21 @@ async function loginUser(req, res) {
         const usuario = await userDao.findUserByEmail(email);
 
         if (!usuario) {
-            return res.status(400).json({ mensaje: 'Usuario no encontrado' });
+            errorHandlers.customErrorHandler('usuarioNoEncontrado', res); //Manejo de error personalizado
+        } else {
+            const isPasswordValid = await bcrypt.compare(pass, usuario.pass);
+
+            if (!isPasswordValid) {
+                errorHandlers.customErrorHandler('contrasenaIncorrecta', res); //Manejo de error personalizado
+            } else {
+                req.session.userId = usuario._id;
+                req.session.email = email;
+                res.redirect('/');
+            }
         }
-
-        const isPasswordValid = await bcrypt.compare(pass, usuario.pass);
-
-        if (!isPasswordValid) {
-            return res.status(400).json({ mensaje: 'Contraseña incorrecta' });
-        }
-
-        req.session.userId = usuario._id;
-        req.session.email = email;
-        
-        res.redirect('/');
     } catch (error) {
         console.error('Error en el servidor:', error);
-        res.status(500).json({ mensaje: 'Error en el servidor' });
+        errorHandlers.customErrorHandler('errorServidor', res); //Manejo de error personalizado
     }
 }
 

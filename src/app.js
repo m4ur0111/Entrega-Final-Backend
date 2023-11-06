@@ -8,9 +8,19 @@ const io = require('socket.io')(http);
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
 const initializePassport = require('./config/passport.config');
+const errorHandler = require('./services/errors/errorHandler');
+const compression = require('compression');
+const brotli = require('brotli');
+const compressionOptions = {
+    level: 11, // El nivel de compresión más alto
+    threshold: 1024, // Solo comprime si la respuesta es de al menos 1 KB
+};
 
 //Configuración del puerto
 const PORT = process.env.PORT;
+
+//Habilito la compresión Gzip y Deflate
+app.use(compression(compressionOptions));
 
 //Configuración de Express
 app.set("view engine", "hbs");
@@ -58,11 +68,13 @@ app.use('/', usersRoutes);
 app.use('/', productRoutes);
 app.use('/', cartRoutes);
 app.use('/', sessionRoutes);
+// Middleware de manejo de errores
+app.use(errorHandler);
 app.use('*', async (req, res) => {
     res.render('404'); //Renderiza la vista 404.hbs
 });
 
 //Iniciar el servidor 
 http.listen(PORT, () => {
-    console.log("Servidor corriendo correctamente")
+    console.log(`Servidor Express en funcionamiento en el puerto ${PORT}`)
 });

@@ -1,5 +1,6 @@
 const productDao = require('../dao/products.dao');
 const Producto = require('../models/products.models');
+const errorHandlers = require('../services/errors/errorHandler');
 
 //Ruta GET para obtener los productos con variables
 async function getProducts(req, res) {
@@ -43,15 +44,19 @@ function renderAddProductPage(req, res) {
 //Ruta POST para agregar un nuevo producto
 async function addProduct(req, res) {
     try {
-        const nuevoProducto = req.body; // Aquí asumimos que los datos del nuevo producto se envían en el cuerpo de la solicitud
-        
+        const nuevoProducto = req.body;
+
+        //Verifica si el producto se creó con éxito
         const productoCreado = await productDao.createProduct(nuevoProducto);
-        
-        // Redirige al usuario a la página de inicio después de crear el producto
-        res.redirect('/products');
+
+        if (!productoCreado) {
+            errorHandlers.customErrorHandler('productoNoCreado', res); //Manejo de error personalizado
+        } else {
+            res.status(201).json({ mensaje: 'Producto creado con éxito' });
+        }
     } catch (error) {
         console.error('Error en el servidor:', error);
-        res.status(500).json({ mensaje: 'Error en el servidor' });
+        errorHandlers.customErrorHandler('errorServidor', res); 
     }
 }
 
@@ -65,7 +70,6 @@ async function renderEditProductPage(req, res) {
             return res.status(404).send('Producto no encontrado');
         }
 
-        // Renderiza la vista de edición de productos y pasa el producto como variable
         res.render('edit-product', { producto });
     } catch (error) {
         console.error('Error en el servidor:', error);
@@ -78,18 +82,18 @@ async function editProduct(req, res) {
     try {
         const productId = req.params.id;
         const updatedProductData = req.body;
-        
+
         const productoActualizado = await productDao.updateProduct(productId, updatedProductData);
 
         if (!productoActualizado) {
-            return res.status(404).send('Producto no encontrado o no se pudo actualizar');
+            errorHandlers.customErrorHandler('productoNoActualizado', res); //Manejo de error personalizado
+        } else {
+            //Producto actualizado con éxito
+            res.redirect(`/product/edit/${productoActualizado._id}`);
         }
-
-        // Redirige al usuario a la página de detalles del producto actualizado
-        res.redirect(`/product/edit/${productoActualizado._id}`);
     } catch (error) {
         console.error('Error en el servidor:', error);
-        res.status(500).json({ mensaje: 'Error en el servidor' });
+        errorHandlers.customErrorHandler('errorServidor', res); //Manejo de error personalizado
     }
 }
 
@@ -97,18 +101,17 @@ async function editProduct(req, res) {
 async function viewProductDetails(req, res) {
     const productId = req.params._id;
 
-    // Busca el producto por su ID en la base de datos
     const product = await Producto.findById(productId);
 
     if (!product) {
-        // Maneja el caso en el que el producto no se encuentra
+        //Maneja el caso en el que el producto no se encuentra
         return res.status(404).render('404');
     }
 
-    // Establece la cookie con la categoría del producto visitado
-    res.cookie('selectedCategory', product.categoria, { maxAge: 1800000 }); // 30 minutos de duración
+    //Establece la cookie con la categoría del producto visitado
+    res.cookie('selectedCategory', product.categoria, { maxAge: 1800000 }); //30 minutos de duración
 
-    // Renderiza la página de detalle de producto y pasa los datos del producto
+    //Renderiza la página de detalle de producto y pasa los datos del producto
     res.render('product-detail', { product });
 }
 
