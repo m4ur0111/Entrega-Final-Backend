@@ -9,18 +9,10 @@ const session = require('express-session');
 const cookieParser = require('cookie-parser');
 const initializePassport = require('./config/passport.config');
 const errorHandler = require('./services/errors/errorHandler');
-const compression = require('compression');
-const brotli = require('brotli');
-const compressionOptions = {
-    level: 11, // El nivel de compresión más alto
-    threshold: 1024, // Solo comprime si la respuesta es de al menos 1 KB
-};
+const { addDevelopmentLogger, addProductionLogger } = require('./services/logger/logger');
 
 //Configuración del puerto
 const PORT = process.env.PORT;
-
-//Habilito la compresión Gzip y Deflate
-app.use(compression(compressionOptions));
 
 //Configuración de Express
 app.set("view engine", "hbs");
@@ -31,6 +23,9 @@ app.use(express.json())
 
 //Configuración de middleware de cookie-parser
 app.use(cookieParser());
+
+//Middleware de manejo de errores
+app.use(errorHandler);
 
 //Configuración de express-session
 app.use(session({
@@ -51,10 +46,20 @@ initializePassport();
 //Conexion a la base de datos
 mongoose.connect(process.env.MONGODB_URI, {
 }).then(() => {
-    console.log("Conectado a la base de datos")
+    console.log("Conectado a la base de datos");
 }).catch(error => {
     console.log("Error en la conexion", error)
 });
+
+// Agregar el logger de desarrollo en el entorno de desarrollo
+if (process.env.NODE_ENV === 'development') {
+    app.use(addDevelopmentLogger);
+    console.log("usando desarrollo")
+} else {
+    // Agregar el logger de producción en otros entornos (como producción)
+    app.use(addProductionLogger);
+    console.log("usando produccion")
+}
 
 //Rutas
 const indexRoutes = require('./routes/index.router');
@@ -68,10 +73,8 @@ app.use('/', usersRoutes);
 app.use('/', productRoutes);
 app.use('/', cartRoutes);
 app.use('/', sessionRoutes);
-// Middleware de manejo de errores
-app.use(errorHandler);
 app.use('*', async (req, res) => {
-    res.render('404'); //Renderiza la vista 404.hbs
+    res.render('404'); 
 });
 
 //Iniciar el servidor 

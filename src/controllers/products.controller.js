@@ -31,7 +31,7 @@ async function getProducts(req, res) {
 
         res.render('products', { productos: result.docs, pagination: result });
         } catch (error) {
-        console.error('Error en el servidor:', error);
+        req.logger.error('Error en el servidor:', error);
         res.status(500).json({ mensaje: 'Error en el servidor' });
     }
 }
@@ -55,8 +55,8 @@ async function addProduct(req, res) {
             res.status(201).json({ mensaje: 'Producto creado con éxito' });
         }
     } catch (error) {
-        console.error('Error en el servidor:', error);
-        errorHandlers.customErrorHandler('errorServidor', res); 
+        req.logger.error('Error en el servidor:', error);
+        errorHandlers.customErrorHandler('errorServidor', res);
     }
 }
 
@@ -72,7 +72,7 @@ async function renderEditProductPage(req, res) {
 
         res.render('edit-product', { producto });
     } catch (error) {
-        console.error('Error en el servidor:', error);
+        req.logger.error('Error en el servidor:', error);
         res.status(500).json({ mensaje: 'Error en el servidor' });
     }
 }
@@ -92,7 +92,7 @@ async function editProduct(req, res) {
             res.redirect(`/product/edit/${productoActualizado._id}`);
         }
     } catch (error) {
-        console.error('Error en el servidor:', error);
+        req.logger.error('Error en el servidor:', error);
         errorHandlers.customErrorHandler('errorServidor', res); //Manejo de error personalizado
     }
 }

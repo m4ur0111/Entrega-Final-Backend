@@ -44,7 +44,7 @@ async function renderHomePage(req, res) {
             }
         });
     } catch (error) {
-        console.error('Error en el servidor:', error);
+        req.logger.error('Error en el servidor:', error);
         res.status(500).json({ mensaje: 'Error en el servidor' });
     }
 }

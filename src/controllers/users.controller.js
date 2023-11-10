@@ -23,11 +23,11 @@ async function registerUser(req, res) {
         if (!usuarioCreado) {
             errorHandlers.customErrorHandler('usuarioExistente', res); //Manejo de error personalizado
         } else {
-            console.log('Usuario registrado con éxito:', email);
+            req.logger.info('Usuario registrado con éxito:', email);
             res.redirect('login');
         }
     } catch (error) {
-        console.error('Error en el servidor:', error);
+        req.logger.error('Error en el servidor:', error);
         errorHandlers.customErrorHandler('errorServidor', res); //Manejo de error personalizado
     }
 }
@@ -57,7 +57,7 @@ async function loginUser(req, res) {
             }
         }
     } catch (error) {
-        console.error('Error en el servidor:', error);
+        req.logger.error('Error en el servidor:', error);
         errorHandlers.customErrorHandler('errorServidor', res); //Manejo de error personalizado
     }
 }
@@ -66,7 +66,7 @@ async function loginUser(req, res) {
 function logoutUser(req, res) {
     req.session.destroy((err) => {
         if (err) {
-            console.error('Error al cerrar sesión:', err);
+            req.logger.error('Error al cerrar sesión:', err);
             return res.status(500).json({ mensaje: 'Error al cerrar sesión' });
         }
         res.redirect('/login');

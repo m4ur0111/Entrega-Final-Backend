@@ -1,0 +1,43 @@
+config:
+  target: "http://localhost:8080" 
+
+scenarios:
+  - flow:
+      - get:
+          url: "/"
+
+  - flow:
+      - get:
+          url: "/products"
+      - think: 2
+      - loop:
+          - post:
+              url: "/api/cart"
+              json:
+                product_id: "{{ $randomNumber(1, 100) }}"
+                quantity: "{{ $randomNumber(1, 5) }}"
+          - think: 1
+      - get:
+          url: "/checkout"
+
+  - flow:
+      - get:
+          url: "/login"
+      - post:
+          url: "/api/login"
+          json:
+            username: "usuario_de_prueba"
+            password: "contrasena_de_prueba"
+      - think: 1
+      - loop:
+          - get:
+              url: "/dashboard"
+          - think: 1
+
+phases:
+  - duration: 900
+    arrivalRate: 10
+  - duration: 300
+    arrivalRate: 20
+  - duration: 600
+    arrivalRate: 30

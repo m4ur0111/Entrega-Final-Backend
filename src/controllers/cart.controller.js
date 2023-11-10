@@ -51,7 +51,7 @@ async function addToCart(req, res) {
 
         res.redirect('/');
     } catch (error) {
-        console.error('Error en el servidor:', error);
+        req.logger.error('Error en el servidor:', error);
         res.status(500).json({ message: errorMessages.errorServidor });
     }
 }
@@ -73,7 +73,7 @@ async function viewCartPage(req, res) {
         res.render('cart', { carrito, detallesDelCarrito });
 
     } catch (error) {
-        console.error('Error en el servidor:', error);
+        req.logger.error('Error en el servidor:', error);
         res.status(500).json({ mensaje: 'Error en el servidor' });
     }
 }
@@ -161,7 +161,7 @@ async function completePurchase(req, res) {
             });
         }
     } catch (error) {
-        console.error('Error en el servidor:', error);
+        req.logger.error('Error en el servidor:', error);
         res.status(500).json({ message: errorMessages.errorServidor });
     }
 }
@@ -175,7 +175,7 @@ async function clearCart(req, res) {
 
         res.status(204).send();
     } catch (error) {
-        console.error('Error en el servidor:', error);
+        req.logger.error('Error en el servidor:', error);
         res.status(500).json({ mensaje: 'Error en el servidor' });
     }
 }
@@ -210,7 +210,7 @@ async function removeProductFromCart(req, res) {
 
         res.json({ success: true, mensaje: 'Producto eliminado del carrito con éxito' });
     } catch (error) {
-        console.error('Error en el servidor:', error);
+        req.logger.error('Error en el servidor:', error);
         res.status(500).json({ success: false, mensaje: 'Error en el servidor' });
     }
 }
@@ -240,7 +240,7 @@ async function updateProductQuantity(req, res) {
 
         res.json({ success: true, mensaje: 'Cantidad actualizada con éxito' });
     } catch (error) {
-        console.error('Error en el servidor:', error);
+        req.logger.error('Error en el servidor:', error);
         res.status(500).json({ success: false, mensaje: 'Error en el servidor' });
     }
 }
