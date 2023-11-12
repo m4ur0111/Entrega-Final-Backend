@@ -61,6 +61,34 @@ if (process.env.NODE_ENV === 'development') {
     console.log("usando produccion")
 }
 
+const users = {}
+
+io.on('connection', (socket) => {
+    console.log("Un usuario se ha conectado")
+    
+    socket.on("new-user", async (userData) => {
+        const { userId, username, isAdmin } = userData;
+        users[socket.id] = { userId, username, isAdmin };
+        io.emit("userConnected", { userId, username, isAdmin });
+
+        if (isAdmin) {
+            // Emitir un mensaje especial cuando un admin se conecta
+            io.emit("adminConnected", { userId, username });
+        }
+    });
+
+    socket.on("chatMessage", (message) => {
+        const username = users[socket.id]
+        io.emit("message", { username, message })
+    })
+
+    socket.on("disconnect", () => {
+        const username = users[socket.id]
+        delete users[socket.id]
+        io.emit("userDisconnected", username)
+    })
+})
+
 //Rutas
 const indexRoutes = require('./routes/index.router');
 const usersRoutes = require('./routes/users.router');

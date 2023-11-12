@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const usersController = require('../controllers/users.controller');
+const { requireLogin } = require('../middleware/authMiddleware');
 
 //Ruta GET para renderizar la página de registro
 router.get('/register', usersController.renderRegisterPage);
@@ -16,5 +17,8 @@ router.post('/login', usersController.loginUser);
 
 //Ruta para cerrar sesión
 router.get('/logout', usersController.logoutUser);
+
+//Ruta para acceder al chat
+router.get('/chat', requireLogin, usersController.renderChatPage);
 
 module.exports = router;

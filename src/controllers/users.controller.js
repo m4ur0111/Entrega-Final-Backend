@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs');
 const userDao = require('../dao/user.dao');
+const { userModel } = require('../models/user.model');
 const errorHandlers = require('../services/errors/errorHandler');
 
 //Renderizar la página de registro
@@ -35,6 +36,27 @@ async function registerUser(req, res) {
 //Renderizar la página de inicio de sesión
 function renderLoginPage(req, res) {
     res.render('login');
+}
+
+async function renderChatPage(req, res) {
+    try {
+        const userId = req.session.userId;
+        const usuario = await userModel.findById(userId);
+
+        if (!usuario) {
+            req.logger.error('Usuario no encontrado:', userId);
+            console.log("usuario no encontrado")
+            return; // Exit the function to prevent further execution
+        }
+
+        res.render('chat', {
+            nombreUsuario: usuario.nombre,
+            rol: usuario.rol,
+        });
+    } catch (error) {
+        req.logger.error('Error en el servidor:', error);
+        errorHandlers.customErrorHandler('errorServidor', res);
+    }
 }
 
 //Iniciar sesión del usuario
@@ -79,4 +101,5 @@ module.exports = {
     renderLoginPage,
     loginUser,
     logoutUser,
+    renderChatPage,
 };
