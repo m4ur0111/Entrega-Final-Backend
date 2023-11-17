@@ -1,21 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        {{!-- Script de SweetAlert 2 --}}
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-        {{!-- Link de CSS --}}
-        <link rel="stylesheet" href="./styles/chat.css">
-        <title>Chat en vivo</title>
-    </head>
-    <!-- Dentro de tu plantilla HBS -->
-    <body>
-        <h1 id="nombreUsuario" class="nombreUsuario">{{nombreUsuario}}</h1>
-        <h1 id="rolUsuario" class="rolUsuario">{{rol}}</h1>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Script de SweetAlert 2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Link de CSS -->
+    <link rel="stylesheet" href="./styles/chat.css">
+    <title>Chat en vivo</title>
+</head>
+
+<body>
+    <div id="main-container">
+        <div id="sidebar">
+            <h2 id="nombreUsuario">{{nombreUsuario}}</h2>
+            <p id="userId">{{userId}}</p>
+            <p id="rolUsuario">{{rol}}</p>
+
+            <div id="active-users-container">
+                <!-- Lista de usuarios activos se mostrará aquí -->
+            </div>
+        </div>
 
         <div id="chat-container">
-            <h1>Sala de chat</h1>
+            <h1>Sala de chat privado</h1>
             <div id="chat-messages" class="message-container"></div>
             <form id="chat-form">
                 <input type="text" id="message" required>
@@ -23,7 +32,13 @@
             </form>
         </div>
 
-        <script src="/socket.io/socket.io.js"></script>
-        <script src="./js/chat.js"></script>
-    </body>
+        <div id="admin-list-container">
+            <!-- Lista de administradores disponibles se mostrará aquí -->
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="./js/chat.js"></script>
+</body>
+
 </html>

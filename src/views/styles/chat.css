@@ -82,11 +82,26 @@ h1 {
     align-self: flex-start;
     background-color: #E5E5E5;
     border-radius: 12px;
-    padding: 10px;    
+    padding: 10px;
     margin-left: 10px;
 }
 
 .admin-message {
-    color: #3498db; /* Puedes ajustar el color según tus preferencias */
+    color: #3498db;
+    /* Puedes ajustar el color según tus preferencias */
     font-style: italic;
+}
+
+#admin-list-container {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    width: 80%;
+    max-width: 700px;
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
 }

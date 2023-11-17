@@ -21,4 +21,7 @@ router.get('/logout', usersController.logoutUser);
 //Ruta para acceder al chat
 router.get('/chat', requireLogin, usersController.renderChatPage);
 
+//Ruta para acceder al perfil
+router.get('/perfil', requireLogin, usersController.renderProfile);
+
 module.exports = router;

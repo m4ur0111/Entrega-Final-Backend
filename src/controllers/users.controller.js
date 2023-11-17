@@ -29,7 +29,7 @@ async function registerUser(req, res) {
         }
     } catch (error) {
         req.logger.error('Error en el servidor:', error);
-        errorHandlers.customErrorHandler('errorServidor', res); //Manejo de error personalizado
+        // errorHandlers.customErrorHandler('errorServidor', res); //Manejo de error personalizado
     }
 }
 
@@ -52,6 +52,7 @@ async function renderChatPage(req, res) {
         res.render('chat', {
             nombreUsuario: usuario.nombre,
             rol: usuario.rol,
+            userId: usuario.id,
         });
     } catch (error) {
         req.logger.error('Error en el servidor:', error);
@@ -80,7 +81,7 @@ async function loginUser(req, res) {
         }
     } catch (error) {
         req.logger.error('Error en el servidor:', error);
-        errorHandlers.customErrorHandler('errorServidor', res); //Manejo de error personalizado
+        // errorHandlers.customErrorHandler('errorServidor', res); //Manejo de error personalizado
     }
 }
 
@@ -95,6 +96,17 @@ function logoutUser(req, res) {
     });
 }
 
+//Renderiza la vista del perfil del usuario
+async function renderProfile(req, res) {
+    const userId = req.session.userId;
+    const usuario = await userModel.findById(userId);
+    res.render('perfil', {
+        userId: usuario.id,
+        nombreUsuario: usuario.nombre,
+        userEmail: usuario.email,
+    })
+}
+
 module.exports = {
     renderRegisterPage,
     registerUser,
@@ -102,4 +114,5 @@ module.exports = {
     loginUser,
     logoutUser,
     renderChatPage,
+    renderProfile,
 };

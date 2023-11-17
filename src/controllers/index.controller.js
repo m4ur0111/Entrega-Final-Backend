@@ -33,6 +33,7 @@ async function renderHomePage(req, res) {
 
         res.render('home', {
             productos,
+            userId: usuario.id,
             nombreUsuario: usuario.nombre,
             Rol: userRole,
             isAdmin,
