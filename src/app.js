@@ -10,7 +10,6 @@ const cookieParser = require('cookie-parser');
 const initializePassport = require('./config/passport.config');
 const errorHandler = require('./services/errors/errorHandler');
 const { addDevelopmentLogger, addProductionLogger } = require('./services/logger/logger');
-const nodemailer = require("nodemailer");
 
 //Configuración del puerto
 const PORT = process.env.PORT;

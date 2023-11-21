@@ -1,5 +1,6 @@
 require('dotenv').config();
 const nodemailer = require("nodemailer");
+const { generarTokenReestablecimiento } = require('../utils/tokenMessage');
 
 const transporter = nodemailer.createTransport({
     service: "Gmail",
@@ -10,6 +11,8 @@ const transporter = nodemailer.createTransport({
 });
 
 function enviarCorreo({ nombre, email }, callback) {
+    const token = generarTokenReestablecimiento(email);
+
     const mailOptions = {
         from: process.env.USER_MAILER,
         to: `${email}`,
@@ -46,6 +49,7 @@ function enviarCorreo({ nombre, email }, callback) {
                     <p class="greeting">Hola ${nombre}.</p>
                     <p class="greeting">Email: ${email}.</p>
                     <p class="message">Este es un correo de prueba para el restablecimiento de contraseña.</p>
+                    <a href="http://localhost:8080/restablecer-contrasena/${token}">Restablecer Contraseña</a>
                     <!-- Agrega más contenido según tus necesidades -->
                 </div>
             </body>
