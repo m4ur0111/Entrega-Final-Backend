@@ -11,23 +11,20 @@ const initializePassport = require('./config/passport.config');
 const errorHandler = require('./services/errors/errorHandler');
 const { addDevelopmentLogger, addProductionLogger } = require('./services/logger/logger');
 
-//Configuración del puerto
+// Configuración del puerto
 const PORT = process.env.PORT;
 
-//Configuración de Express
+// Configuración de Express
 app.set("view engine", "hbs");
 app.set("views", path.join(__dirname, "views"));
 app.use(express.static(path.join(__dirname, "views")));
 app.use(express.urlencoded({ extended: true }));
-app.use(express.json())
+app.use(express.json());
 
-//Configuración de middleware de cookie-parser
+// Configuración de middleware de cookie-parser
 app.use(cookieParser());
 
-//Middleware de manejo de errores
-app.use(errorHandler);
-
-//Configuración de express-session
+// Configuración de express-session
 const sessionMiddleware = session({
     secret: process.env.SESSION_SECRET,
     resave: false,
@@ -42,28 +39,27 @@ const sessionMiddleware = session({
 
 app.use(sessionMiddleware);
 
-//Inicializo Passport
+// Inicializo Passport
 initializePassport();
 
-//Conexion a la base de datos
-mongoose.connect(process.env.MONGODB_URI, {
-}).then(() => {
+// Conexion a la base de datos
+mongoose.connect(process.env.MONGODB_URI, {}).then(() => {
     console.log("Conectado a la base de datos");
 }).catch(error => {
-    console.log("Error en la conexion", error)
+    console.log("Error en la conexion", error);
 });
 
 // Agregar el logger de desarrollo en el entorno de desarrollo
 if (process.env.NODE_ENV === 'development') {
     app.use(addDevelopmentLogger);
-    console.log("usando desarrollo")
+    console.log("usando desarrollo");
 } else {
     // Agregar el logger de producción en otros entornos (como producción)
     app.use(addProductionLogger);
-    console.log("usando produccion")
+    console.log("usando produccion");
 }
 
-//Rutas
+// Rutas
 const indexRoutes = require('./routes/index.router');
 const usersRoutes = require('./routes/users.router');
 const productRoutes = require('./routes/products.router');
@@ -77,11 +73,18 @@ app.use('/', productRoutes);
 app.use('/', cartRoutes);
 app.use('/', sessionRoutes);
 app.use('/', messagesRoutes);
-app.use('*', async (req, res) => {
-    res.render('404'); 
+
+// Middleware de manejo de errores
+app.use((err, req, res, next) => {
+    errorHandler.customErrorHandler(err, req, res, next);
 });
 
-//Iniciar el servidor 
+// Último middleware para manejar rutas no encontradas
+app.use('*', async (req, res) => {
+    res.render('404');
+});
+
+// Iniciar el servidor
 http.listen(PORT, () => {
-    console.log(`Servidor Express en funcionamiento en el puerto ${PORT}`)
+    console.log(`Servidor Express en funcionamiento en el puerto ${PORT}`);
 });

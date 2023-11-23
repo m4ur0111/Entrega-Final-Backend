@@ -1,7 +1,6 @@
 const { userModel } = require('../models/user.model');
 const bcrypt = require('bcryptjs');
 
-//Funcion para encontrar el email del usuario
 async function findUserByEmail(email) {
     try {
         const user = await userModel.findOne({ email });
@@ -11,7 +10,6 @@ async function findUserByEmail(email) {
     }
 }
 
-//Funcion para crear un usuario
 async function createUser({ nombre, apellido, edad, email, pass }) {
     try {
         const usuarioExistente = await findUserByEmail(email);
@@ -35,7 +33,18 @@ async function createUser({ nombre, apellido, edad, email, pass }) {
     }
 }
 
+async function updatePass(email, nuevaContrasena) {
+    try {
+        const hashedPass = await bcrypt.hash(nuevaContrasena, 10);
+        const resultado = await userModel.updateOne({ email }, { pass: hashedPass });
+        return resultado;
+    } catch (error) {
+        throw error;
+    }
+}
+
 module.exports = {
     findUserByEmail,
     createUser,
+    updatePass,
 };

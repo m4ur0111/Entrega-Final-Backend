@@ -1,6 +1,8 @@
+const mongoose = require('mongoose');
 const productDao = require('../dao/products.dao');
 const Producto = require('../models/products.models');
 const errorHandlers = require('../services/errors/errorHandler');
+const { getUserRoleFromDatabase } = require('../utils/function');
 
 //Ruta GET para obtener los productos con variables
 async function getProducts(req, res) {
@@ -29,10 +31,21 @@ async function getProducts(req, res) {
 
         const result = await Producto.paginate(queryOptions, options);
 
-        res.render('products', { productos: result.docs, pagination: result });
-        } catch (error) {
-        req.logger.error('Error en el servidor:', error);
-        res.status(500).json({ mensaje: 'Error en el servidor' });
+        // Obtén la información sobre el rol del usuario
+        const userId = req.session.userId;
+        const userRole = await getUserRoleFromDatabase(userId);
+
+        let isAdmin = false;
+
+        if (userRole === 'admin') {
+            isAdmin = true;
+        }
+        
+        console.log(isAdmin)
+        res.render('products', { productos: result.docs, pagination: result, isAdmin });
+    } catch (error) {
+        console.error('Error en el servidor:', error);
+        res.status(500).json({ mensaje: 'Error en el servidor', error: error.message });
     }
 }
 
@@ -46,17 +59,25 @@ async function addProduct(req, res) {
     try {
         const nuevoProducto = req.body;
 
-        //Verifica si el producto se creó con éxito
-        const productoCreado = await productDao.createProduct(nuevoProducto);
+        // Añadir automáticamente el email del usuario al producto
+        const userId = req.session.userId;
+        // Verifica si el producto se creó con éxito
+        if (userId) {
+            nuevoProducto.owner = userId;
+            const productoCreado = await productDao.createProduct(nuevoProducto);
 
-        if (!productoCreado) {
-            errorHandlers.customErrorHandler('productoNoCreado', res); //Manejo de error personalizado
+            if (!productoCreado) {
+                errorHandlers.customErrorHandler('productoNoCreado', res); 
+            } else {
+                res.status(201).json({ mensaje: 'Producto creado con éxito' });
+            }
         } else {
-            res.status(201).json({ mensaje: 'Producto creado con éxito' });
+            res.status(401).json({ mensaje: 'Usuario no autenticado' });
         }
     } catch (error) {
         req.logger.error('Error en el servidor:', error);
-        errorHandlers.customErrorHandler('errorServidor', res);
+        console.log(error);
+        res.status(500).json({ mensaje: 'Error en el servidor al crear el producto' });
     }
 }
 
@@ -115,6 +136,49 @@ async function viewProductDetails(req, res) {
     res.render('product-detail', { product });
 }
 
+async function getMyProducts(req, res) {
+    try {
+        const userId = req.session.userId;
+
+        // Obtener productos del usuario
+        const userProducts = await productDao.getProductsByUserId(userId);
+
+        // Renderizar la vista con los productos del usuario
+        res.render('my-products', { productos: userProducts });
+    } catch (error) {
+        req.logger.error('Error en el servidor:', error);
+        res.status(500).json({ mensaje: 'Error en el servidor al obtener los productos del usuario' });
+    }
+}
+
+// Agrega esto en tu controlador
+async function deleteProduct(req, res) {
+    try {
+        const productId = req.params.productId;
+
+        // Verifica si el ID del producto es válido
+        if (!mongoose.Types.ObjectId.isValid(productId)) {
+            return res.status(400).json({ success: false, mensaje: 'ID de producto inválido' });
+        }
+
+        // Eliminar el producto por su ID
+        const deletedProduct = await Producto.findByIdAndDelete(productId);
+
+        if (!deletedProduct) {
+            // El producto no fue encontrado
+            return res.status(404).json({ success: false, mensaje: 'Producto no encontrado' });
+        }
+
+        // Producto eliminado con éxito
+        res.status(200).json({ success: true, mensaje: 'Producto eliminado con éxito' });
+    } catch (error) {
+        // Imprime el error en la consola para depuración
+        console.error('Error en el servidor:', error);
+        res.status(500).json({ success: false, mensaje: 'Error en el servidor al eliminar el producto' });
+    }
+}
+
+
 module.exports = {
     getProducts,
     renderAddProductPage,
@@ -122,4 +186,6 @@ module.exports = {
     renderEditProductPage,
     editProduct,
     viewProductDetails,
+    getMyProducts,
+    deleteProduct,
 };

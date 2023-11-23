@@ -75,6 +75,9 @@
                     <a href="/product/{{_id}}" class="product-detail-link">Ver Detalles</a>
                     {{#if ../isAdmin}}
                         <button class="editar-producto" data-producto-id="{{_id}}"><a href="/product/edit/{{_id}}" class="editar-producto">Editar Producto</a></button>
+                        <button class="eliminar-producto-btn" data-product-id="{{_id}}">
+                            <i class="fas fa-trash"></i> Eliminar Producto
+                        </button>
                     {{/if}}
                 </div>
             </div>
@@ -93,7 +96,7 @@
         <button onclick="changePage({{pagination.totalPages}})">Última</button>
     </div>
 
-    
+    <script src="./js/delete-product-user.js"></script>    
     <script src="./js/filter.js"></script>
 </body>
 </html>

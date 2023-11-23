@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {{!-- Link de Font Awesome --}}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    {{!-- Link de Google Fonts --}}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Comme:wght@100;200;300;400;500;600;700;800;900&family=Montserrat:wght@100;200;300;400;500;600;700&display=swap" rel="stylesheet">
+    {{!-- Estilos CSS --}}
+    <link rel="stylesheet" href="./styles/my-product.css">
+    <title>Mis Productos</title>
+</head>
+<body>
+    {{!< layouts/main }}
+
+        <header>
+            <nav class="navbar">
+                <div class="navbar-left">
+                    <p class="navbar-text"><a href="/" class="navbar-logo">Tienda Tecnologica</a></p>
+                </div>
+                <div class="navbar-right">
+                    <a href="/" class="navbar-link">Inicio</a>
+                    <a href="/products" class="navbar-link">Productos</a>
+                    <a href="/cart" class="navbar-link cart-link">
+                        <i class="fas fa-shopping-cart"></i> <!-- Icono de carrito -->
+                        Carrito
+                    </a>
+                    <a href="/perfil" class="navbar-link">Perfil</a>
+                    <a href="/logout" class="navbar-link logout-link">
+                        <span class="icon">&#128274;</span> Cerrar Sesión
+                    </a>
+                </div>
+            </nav>
+        </header>
+
+    <h1>Mis Productos</h1>
+    <button class="add-producto"><a href="/product/add" class="add-producto">Añadir Producto</a></button>
+
+    {{#if productos.length}}
+        <div class="productos">
+            {{#each productos}}
+            <div class="producto">
+                <img class="producto-imagen" src="{{imagen}}" alt="Imagen del producto">
+                <div class="producto-info">
+                    <h3 class="producto-nombre">{{nombre}}</h3>
+                    <p class="producto-descripcion">{{descripcion}}</p>
+                    <p class="producto-precio">Precio: ${{precio}}</p>
+                    <p class="producto-categoria">Categoría: {{categoria}}</p>
+                    <!-- Agrega esto en tu archivo HTML -->
+                    <button class="eliminar-producto-btn" data-product-id="{{_id}}">
+                        <i class="fas fa-trash"></i> Eliminar Producto
+                    </button>
+                    <button class="editar-producto" data-producto-id="{{_id}}">
+                        <a href="/product/edit/{{_id}}" class="editar-producto">Editar Producto</a>
+                    </button>
+                </div>
+            </div>
+            {{/each}}
+        </div>
+    {{else}}
+        <p>No tienes productos.</p>
+    {{/if}}
+
+    <!-- Agrega cualquier otro contenido que necesites -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="./js/delete-product-user.js"></script>
+</body>
+</html>

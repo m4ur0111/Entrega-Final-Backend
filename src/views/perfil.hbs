@@ -7,14 +7,43 @@
     <link rel="stylesheet" href="./styles/perfil.css">
 </head>
 <body>
-    <div class="profile-container">
-        <div class="profile-name">{{nombreUsuario}}</div>
-        <div class="profile-job-title">Su id es {{userId}}</div>
-        <form action="/enviar-correo" method="post">
-            <input type="hidden" name="nombre" value="{{nombreUsuario}}">
-            <input type="hidden" name="email" value="{{userEmail}}">
-            <button class="reset-password-button" type="submit">Restablecer Contraseña</button>
-        </form>
-    </div>
+    {{!< layouts/main }}
+
+        <header>
+            <nav class="navbar">
+                <div class="navbar-left">
+                    <p class="navbar-text"><a href="/" class="navbar-logo">Tienda Tecnologica</a></p>
+                </div>
+                <div class="navbar-right">
+                    <a href="/" class="navbar-link">Inicio</a>
+                    <a href="/products" class="navbar-link">Productos</a>
+                    <a href="/cart" class="navbar-link cart-link">
+                        <i class="fas fa-shopping-cart"></i> <!-- Icono de carrito -->
+                        Carrito
+                    </a>
+                    <a href="/perfil" class="navbar-link">Perfil</a>
+                    <a href="/logout" class="navbar-link logout-link">
+                        <span class="icon">&#128274;</span> Cerrar Sesión
+                    </a>
+                </div>
+            </nav>
+        </header>
+    
+        <div class="profile-container">
+            <h1>Bienvenido a tu perfil {{nombreUsuario}}</h1>
+            <h2>Tu rol es: {{ userRol }}</h2>
+            <p>Tu id es: {{userId}}</p>
+            <form action="/enviar-correo" method="post">
+                <input type="hidden" name="nombre" value="{{nombreUsuario}}">
+                <input type="hidden" name="email" value="{{userEmail}}">
+                <button class="reset-password-button" type="submit">Restablecer Contraseña</button>
+            </form>
+            {{#if isPremium}}
+                <h1>Listado de sus productos creados</h1>
+                <form action="/my-products">
+                    <button class="reset-password-button">Ver mis productos</button>
+                </form>
+            {{/if}}
+        </div>
 </body>
 </html>

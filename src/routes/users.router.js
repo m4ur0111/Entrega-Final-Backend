@@ -24,4 +24,10 @@ router.get('/chat', requireLogin, usersController.renderChatPage);
 //Ruta para acceder al perfil
 router.get('/perfil', requireLogin, usersController.renderProfile);
 
+//Ruta para cambiar el rol del usuario
+router.post('/premium', requireLogin, usersController.changeUserRole);
+
+//Ruta para ver el listado de usuarios
+router.get('/rol-usuario', requireLogin, usersController.renderAllUsers);
+
 module.exports = router;

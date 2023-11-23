@@ -3,14 +3,22 @@ const Order = require('../models/order.model');
 const Producto = require('../models/products.models');
 const cartDao = require('../dao/cart.dao');
 const generateCode = require('../utils/function');
+const { getUserRoleFromDatabase } = require('../utils/function');
 const moment = require('moment-timezone');
-const errorHandlers = require('../services/errors/errorHandler');
+const errorDictionary = require('../services/errors/errorDictionary')
 
 //Ruta POST para agregar un producto al carrito
-async function addToCart(req, res) {
+const addToCart = async (req, res) => {
     try {
         const productoId = req.params.productoId;
         const userId = req.session.userId;
+
+        const userRole = await getUserRoleFromDatabase(userId);
+        let isPremium = false;
+
+        if (userRole === 'premium') {
+            isPremium = true;
+        }
 
         let carrito = await cartDao.getCartByUserId(userId);
 
@@ -20,31 +28,59 @@ async function addToCart(req, res) {
 
         const productoEnCarrito = carrito.productos.find((item) => item.producto.equals(productoId));
 
-        //Obtén la cantidad enviada desde el cliente
         const cantidadDesdeCliente = parseInt(req.body.quantity);
 
-        if (productoEnCarrito) {
-            //Si el producto ya está en el carrito, actualiza su cantidad
-            productoEnCarrito.cantidad += cantidadDesdeCliente;
-        } else {
-            const producto = await Producto.findById(productoId);
+        const producto = await Producto.findById(productoId);
 
-            if (producto) {
-                carrito.productos.push({
-                    producto: productoId,
-                    cantidad: cantidadDesdeCliente, 
-                    precioUnitario: producto.precio,
-                    nombre: producto.nombre,
-                    imagen: producto.imagen
-                });
+        //Verifica si el producto pertenece al usuario actual
+        if (producto && producto.owner && producto.owner.equals(userId)) {
+            return res.status(403).json({
+                message: 'No puedes agregar tus propios productos al carrito.',
+            });
+        }
+
+        if (isPremium) {
+            //Si el usuario es premium, verifica si el producto pertenece a otro usuario premium
+            if (producto && (!producto.owner || !producto.owner.equals(userId))) {
+                if (productoEnCarrito) {
+                    productoEnCarrito.cantidad += cantidadDesdeCliente;
+                } else {
+                    carrito.productos.push({
+                        producto: productoId,
+                        cantidad: cantidadDesdeCliente,
+                        precioUnitario: producto.precio,
+                        nombre: producto.nombre,
+                        imagen: producto.imagen,
+                    });
+                }
             } else {
-                return res.status(404).json({ message: errorMessages.productoNoEncontrado }); //Manejo de error personalizado
+                return res.status(403).json({
+                    message: 'Los usuarios premium no pueden agregar sus propios productos al carrito.',
+                });
+            }
+        } else {
+            if (producto) {
+                if (productoEnCarrito) {
+                    productoEnCarrito.cantidad += cantidadDesdeCliente;
+                } else {
+                    //Agrega el producto al carrito
+                    carrito.productos.push({
+                        producto: productoId,
+                        cantidad: cantidadDesdeCliente,
+                        precioUnitario: producto.precio,
+                        nombre: producto.nombre,
+                        imagen: producto.imagen,
+                    });
+                }
+            } else {
+                //Si el producto no se encuentra, devuelve un mensaje de error
+                return res.status(404).json({ message: errorDictionary.productoNoEncontrado });
             }
         }
 
         //Actualiza el total del carrito
         carrito.total = carrito.productos.reduce((total, item) => {
-            return total + (item.cantidad * item.precioUnitario);
+            return total + item.cantidad * item.precioUnitario;
         }, 0);
 
         await carrito.save();
@@ -52,9 +88,9 @@ async function addToCart(req, res) {
         res.redirect('/');
     } catch (error) {
         req.logger.error('Error en el servidor:', error);
-        res.status(500).json({ message: errorMessages.errorServidor });
+        res.status(500).json({ message: errorDictionary.errorServidor });
     }
-}
+};
 
 //Ruta GET para la página de carrito
 async function viewCartPage(req, res) {

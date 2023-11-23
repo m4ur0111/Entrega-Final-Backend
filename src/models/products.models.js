@@ -12,9 +12,14 @@ const productoSchema = new mongoose.Schema({
     disponibilidad: { type: Boolean, default: true },
     createdAt: { type: Date, default: Date.now },
     stock: { type: String, required: true },
+    owner: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true,
+    },
 });
 
-//Agrega el plugin de paginación
+// Agrega el plugin de paginación
 productoSchema.plugin(mongoosePaginate);
 
 const Producto = mongoose.model(productCollection, productoSchema);

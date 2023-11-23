@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const userDao = require('../dao/user.dao');
 const { userModel } = require('../models/user.model');
 const errorHandlers = require('../services/errors/errorHandler');
+const { getUserRoleFromDatabase } = require('../utils/function');
 
 //Renderizar la página de registro
 function renderRegisterPage(req, res) {
@@ -100,11 +101,75 @@ function logoutUser(req, res) {
 async function renderProfile(req, res) {
     const userId = req.session.userId;
     const usuario = await userModel.findById(userId);
+    const userRole = await getUserRoleFromDatabase(userId);
+
+    let isPremium = false;
+
+    if (userRole === 'premium') {
+        isPremium = true;
+    }
+
     res.render('perfil', {
         userId: usuario.id,
         nombreUsuario: usuario.nombre,
         userEmail: usuario.email,
+        userRol: usuario.rol,
+        isPremium,
     })
+}
+
+//Funcion para verificar el rol del usuario
+async function checkUserRole(req, res, next) {
+    try {
+        const userId = req.session.userId; 
+
+        const user = await userModel.findById(userId);
+
+        if (user && (user.rol === 'premium' || user.rol === 'admin')) {
+            next();
+        } else {
+            res.status(403).json({ mensaje: 'Acceso no autorizado' });
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ mensaje: 'Error en el servidor' });
+    }
+}
+
+// Cambiar el rol del usuario a premium o user
+async function changeUserRole(req, res) {
+    try {
+        const userIdToUpdate = req.body.userIdToUpdate;
+        const newRole = req.body.newRole;
+
+        // Verifica si el usuario actual tiene permisos para cambiar roles
+        await checkUserRole(req, res);
+
+        // Verifica si el nuevo rol es válido (user o premium)
+        if (newRole !== 'user' && newRole !== 'premium') {
+            return res.status(400).json({ message: 'Rol no válido. Use "user" o "premium".' });
+        }
+
+        // Actualiza el rol del usuario en la base de datos
+        const updatedUser = await userModel.findByIdAndUpdate(
+            userIdToUpdate,
+            { rol: newRole },
+            { new: true }
+        );
+
+        if (!updatedUser) {
+            return res.status(404).json({ message: 'Usuario no encontrado' });
+        }
+
+        res.status(200).json({ message: `Rol del usuario ${userIdToUpdate} actualizado a ${newRole}` });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error en el servidor' });
+    }
+}
+
+async function renderAllUsers(req, res) {
+    res.render('view-users');
 }
 
 module.exports = {
@@ -115,4 +180,7 @@ module.exports = {
     logoutUser,
     renderChatPage,
     renderProfile,
+    checkUserRole,
+    changeUserRole,
+    renderAllUsers,
 };

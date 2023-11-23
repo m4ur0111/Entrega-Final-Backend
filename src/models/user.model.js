@@ -16,6 +16,10 @@ userSchema.statics.findById = function(id, callback) {
     return this.findOne({ _id: id }, callback);
 };
 
+userSchema.methods.isPremium = function () {
+    return this.rol.includes('premium');
+};
+
 const userModel = mongoose.model(userCollection, userSchema);
 
 module.exports = { userModel };

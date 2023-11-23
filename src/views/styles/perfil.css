@@ -1,12 +1,55 @@
-body {
-    font-family: 'Arial', sans-serif;
-    background-color: #f4f4f4;
+*{
+    font-family: 'Montserrat', sans-serif;
     margin: 0;
     padding: 0;
+    box-sizing: border-box;
+}
+
+.navbar {
+    background: radial-gradient(circle at 10% 20%, rgb(69, 86, 102) 0%, rgb(34, 34, 34) 90%);
+    height: 80px;
+    color: #fff;
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
+    padding: 10px 20px;
     align-items: center;
-    height: 100vh;
+}
+
+/* Estilos del texto a la izquierda */
+.navbar-left {
+    font-size: 1.5rem;
+}
+
+/* Estilos de los enlaces a la derecha */
+.navbar-right {
+    display: flex;
+    align-items: center;
+}
+
+/* Estilos de los enlaces de navegación */
+.navbar-link {
+    text-decoration: none;
+    color: #fff;
+    margin-right: 20px;
+    font-size: 1rem;
+}
+
+.navbar-logo {
+    text-decoration: none;
+    color: #fff;
+    margin-right: 20px;
+}
+
+/* Estilos para el enlace de cerrar sesión */
+.logout-link {
+    display: flex;
+    align-items: center;
+}
+
+/* Estilos para el ícono de cerrar sesión */
+.icon {
+    font-size: 1.2rem;
+    margin-right: 5px;
 }
 
 .profile-container {
@@ -15,18 +58,19 @@ body {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     padding: 20px;
     text-align: center;
+    margin: 2rem;
 }
 
-.profile-name {
-    font-size: 24px;
-    font-weight: bold;
-    margin-bottom: 10px;
+h1{
+    margin: 15px;
 }
 
-.profile-job-title {
-    color: #555;
-    font-size: 16px;
-    margin-bottom: 20px;
+h2{
+    margin: 15px;
+}
+
+p{
+    margin: 5px;
 }
 
 .reset-password-button {
@@ -37,6 +81,7 @@ body {
     font-size: 16px;
     cursor: pointer;
     border-radius: 4px;
+    margin: 1rem;
 }
 
 .reset-password-button:hover {

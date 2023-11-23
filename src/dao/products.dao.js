@@ -1,5 +1,6 @@
 const Producto = require('../models/products.models');
 
+
 async function createProduct(newProductData) {
     try {
         const productoCreado = await Producto.create(newProductData);
@@ -31,8 +32,19 @@ async function updateProduct(productId, updatedProductData) {
     }
 }
 
+async function getProductsByUserId(userId) {
+    try {
+        // Busca todos los productos que pertenecen al usuario con el ID proporcionado
+        const userProducts = await Producto.find({ owner: userId });
+        return userProducts;
+    } catch (error) {
+        throw error;
+    }
+}
+
 module.exports = {
     createProduct,
     findProductById,
     updateProduct,
+    getProductsByUserId,
 };

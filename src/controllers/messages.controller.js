@@ -1,6 +1,7 @@
 require('dotenv').config();
 const nodemailer = require("nodemailer");
-const { generarTokenReestablecimiento } = require('../utils/tokenMessage');
+const { generarTokenRestablecimiento, verificarTokenRestablecimiento } = require('../utils/tokenMessage');
+const userDao = require('../dao/user.dao');
 
 const transporter = nodemailer.createTransport({
     service: "Gmail",
@@ -11,7 +12,7 @@ const transporter = nodemailer.createTransport({
 });
 
 function enviarCorreo({ nombre, email }, callback) {
-    const token = generarTokenReestablecimiento(email);
+    const token = generarTokenRestablecimiento(email);
 
     const mailOptions = {
         from: process.env.USER_MAILER,
@@ -48,8 +49,8 @@ function enviarCorreo({ nombre, email }, callback) {
                 <div class="container">
                     <p class="greeting">Hola ${nombre}.</p>
                     <p class="greeting">Email: ${email}.</p>
-                    <p class="message">Este es un correo de prueba para el restablecimiento de contraseña.</p>
-                    <a href="http://localhost:8080/restablecer-contrasena/${token}">Restablecer Contraseña</a>
+                    <p class="message">Presione el botón para ser redirigido y proceder al restablecimiento de su contraseña.</p>
+                    <a href="http://localhost:8080/restablecer-contrasena/${token}/${email}">Restablecer Contraseña</a>
                     <!-- Agrega más contenido según tus necesidades -->
                 </div>
             </body>
@@ -62,10 +63,75 @@ function enviarCorreo({ nombre, email }, callback) {
             console.log(error);
             callback("Error de envío");
         } else {
-            console.log("Correo enviado", info.response);
             callback(null, "Correo enviado con éxito");
         }
     });
 }
 
-module.exports = { enviarCorreo };
+async function sendMessage(req, res) {
+    const { nombre, email } = req.body;
+
+    enviarCorreo({ nombre, email }, (error, resultado) => {
+        if (error) {
+            res.send(error);
+        } else {
+            res.send(resultado);
+        }
+    });
+}
+
+async function resetPass(req, res) {
+    const token = req.params.token;
+    let email = req.params.email;  
+
+    try {
+        email = verificarTokenRestablecimiento(token);
+
+        // Obtener información adicional del usuario (nombre) si es necesario
+        const usuario = await userDao.findUserByEmail(email);
+        const nombreUsuario = usuario ? usuario.nombre : '';
+
+        res.render('reset-pass', {
+            Email: email,
+            Token: token,
+            Nombre: nombreUsuario,
+        });
+    } catch (error) {
+        if (error.message === 'Token no válido') {
+            // Obtener información adicional del usuario (nombre) si es necesario
+            const usuario = await userDao.findUserByEmail(email);
+            const nombreUsuario = usuario ? usuario.nombre : '';
+
+            // Redirigir a la vista de errorPass con el mensaje adecuado y la información del usuario
+            return res.render('errorPass', {
+                mensaje: 'El enlace ha expirado. Genera un nuevo correo de restablecimiento.',
+                Email: email,
+                Nombre: nombreUsuario,
+            });
+        }
+
+        console.error(error);
+        res.render('errorPass', { mensaje: 'Error al procesar el restablecimiento de contraseña' });
+    }
+}
+
+async function procesarContrasena(req, res) {
+    const { token, nuevaContrasena, confirmarContrasena } = req.body;
+
+    try {
+        const email = verificarTokenRestablecimiento(token);
+
+        if (nuevaContrasena !== confirmarContrasena) {
+            return res.render('error', { mensaje: 'Las contraseñas no coinciden' });
+        }
+
+        await userDao.updatePass(email, nuevaContrasena);
+
+        res.render('login');
+    } catch (error) {
+        console.error(error);
+        res.render('login');
+    }
+}
+
+module.exports = { enviarCorreo, sendMessage, resetPass, procesarContrasena };
