@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./styles/change-rol.css">
+    <title>Admin - Usuarios</title>
+</head>
+
+<body>
+    {{!< layouts/main }}
+        <header>
+            <nav class="navbar">
+                <div class="navbar-left">
+                    <p class="navbar-text"><a href="/" class="navbar-logo">Tienda Tecnologica</a></p>
+                </div>
+                <div class="navbar-right">
+                    <a href="/" class="navbar-link">Inicio</a>
+                    <a href="/products" class="navbar-link">Productos</a>
+                    <a href="/cart" class="navbar-link cart-link">
+                        <i class="fas fa-shopping-cart"></i> <!-- Icono de carrito -->
+                        Carrito
+                    </a>
+                    <a href="/perfil" class="navbar-link">Perfil</a>
+                    <a href="/logout" class="navbar-link logout-link">
+                        <span class="icon">&#128274;</span> Cerrar Sesión
+                    </a>
+                </div>
+            </nav>
+        </header>
+
+        <h1>Usuarios</h1>
+        <h2>Modifica el rol del usuario mediante su ID</h2>
+        <!-- Formulario para cambiar el rol del usuario por ID -->
+        <form action="/premium" method="post">
+            <label for="userIdToUpdate">ID del usuario:</label>
+            <input type="text" name="userIdToUpdate" id="userIdToUpdate" />
+
+            <label for="newRole">Nuevo rol (user/premium):</label>
+            <input type="text" name="newRole" id="newRole" />
+
+            <button type="submit">Cambiar Rol</button>
+        </form>
+</body>
+
+</html>

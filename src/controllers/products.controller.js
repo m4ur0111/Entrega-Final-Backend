@@ -41,7 +41,6 @@ async function getProducts(req, res) {
             isAdmin = true;
         }
         
-        console.log(isAdmin)
         res.render('products', { productos: result.docs, pagination: result, isAdmin });
     } catch (error) {
         console.error('Error en el servidor:', error);

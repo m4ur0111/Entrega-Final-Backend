@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const productsController = require('../controllers/products.controller');
-const userController = require('../controllers/users.controller');
 const { requireLogin } = require('../middleware/authMiddleware');
 
 //Ruta DELETE para eliminar productos
@@ -11,13 +10,13 @@ router.delete('/limpiar/:productId', productsController.deleteProduct);
 router.get('/products', requireLogin, productsController.getProducts);
 
 //Ruta GET para la página de agregar producto
-router.get('/product/add', userController.checkUserRole ,productsController.renderAddProductPage);
+router.get('/product/add' ,productsController.renderAddProductPage);
 
 //Ruta POST para agregar un nuevo producto
 router.post('/products', productsController.addProduct);
 
 //Ruta GET para mostrar la vista de edición de productos
-router.get('/product/edit/:id', userController.checkUserRole, productsController.renderEditProductPage);
+router.get('/product/edit/:id', productsController.renderEditProductPage);
 
 //Ruta POST para procesar la edición de un producto
 router.post('/product/edit/:id', productsController.editProduct);
@@ -26,7 +25,7 @@ router.post('/product/edit/:id', productsController.editProduct);
 router.get('/product/:_id', productsController.viewProductDetails);
 
 //Ruta GET para ver los productos que el usuario creo
-router.get('/my-products', userController.checkUserRole, productsController.getMyProducts);
+router.get('/my-products', productsController.getMyProducts);
 
 
 

@@ -38,7 +38,7 @@ async function registerUser(req, res) {
 function renderLoginPage(req, res) {
     res.render('login');
 }
-
+//FUNCION QUE AUN NO ES UTILIZADA CORRECTAMENTE
 async function renderChatPage(req, res) {
     try {
         const userId = req.session.userId;
@@ -47,7 +47,7 @@ async function renderChatPage(req, res) {
         if (!usuario) {
             req.logger.error('Usuario no encontrado:', userId);
             console.log("usuario no encontrado")
-            return; // Exit the function to prevent further execution
+            return; 
         }
 
         res.render('chat', {
@@ -82,7 +82,6 @@ async function loginUser(req, res) {
         }
     } catch (error) {
         req.logger.error('Error en el servidor:', error);
-        // errorHandlers.customErrorHandler('errorServidor', res); //Manejo de error personalizado
     }
 }
 
@@ -104,9 +103,12 @@ async function renderProfile(req, res) {
     const userRole = await getUserRoleFromDatabase(userId);
 
     let isPremium = false;
+    let isAdmin = false;
 
     if (userRole === 'premium') {
         isPremium = true;
+    }else if (userRole === 'admin'){
+        isAdmin = true;
     }
 
     res.render('perfil', {
@@ -115,18 +117,19 @@ async function renderProfile(req, res) {
         userEmail: usuario.email,
         userRol: usuario.rol,
         isPremium,
+        isAdmin,
     })
 }
 
 //Funcion para verificar el rol del usuario
-async function checkUserRole(req, res, next) {
+async function checkUserRole(req, res) {
     try {
         const userId = req.session.userId; 
 
         const user = await userModel.findById(userId);
 
         if (user && (user.rol === 'premium' || user.rol === 'admin')) {
-            next();
+            res.status(200).send();
         } else {
             res.status(403).json({ mensaje: 'Acceso no autorizado' });
         }
@@ -136,21 +139,20 @@ async function checkUserRole(req, res, next) {
     }
 }
 
-// Cambiar el rol del usuario a premium o user
+//Cambiar el rol del usuario a premium o user
 async function changeUserRole(req, res) {
     try {
         const userIdToUpdate = req.body.userIdToUpdate;
         const newRole = req.body.newRole;
 
-        // Verifica si el usuario actual tiene permisos para cambiar roles
+        //Verifica si el usuario actual tiene permisos para cambiar roles
         await checkUserRole(req, res);
 
-        // Verifica si el nuevo rol es válido (user o premium)
+        //Verifica si el nuevo rol es válido (user o premium)
         if (newRole !== 'user' && newRole !== 'premium') {
             return res.status(400).json({ message: 'Rol no válido. Use "user" o "premium".' });
         }
 
-        // Actualiza el rol del usuario en la base de datos
         const updatedUser = await userModel.findByIdAndUpdate(
             userIdToUpdate,
             { rol: newRole },
@@ -169,7 +171,7 @@ async function changeUserRole(req, res) {
 }
 
 async function renderAllUsers(req, res) {
-    res.render('view-users');
+    res.render('change-rol');
 }
 
 module.exports = {

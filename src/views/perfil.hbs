@@ -44,6 +44,12 @@
                     <button class="reset-password-button">Ver mis productos</button>
                 </form>
             {{/if}}
+            {{#if isAdmin}}
+                <h1>Cambiar el rol de un usuario por su ID</h1>
+                <form action="/rol-usuario">
+                    <button class="reset-password-button">Cambiar Rol</button>
+                </form>
+            {{/if}}
         </div>
 </body>
 </html>

@@ -20,3 +20,7 @@ Rol: user,
 Email: admin@gmail.com,
 Pass: adminCoderHouse,
 Rol: admin,
+
+<Usuario premium>
+Email: userpremium@gmail.com
+Pass: UsuarioPremium
