@@ -1,0 +1,242 @@
+paths:
+  /products:
+    get:
+      summary: Obtener productos con opciones de filtrado.
+      tags:
+        - Products
+      parameters:
+        - in: query
+          name: limit
+          type: integer
+          description: Número máximo de productos a retornar.
+        - in: query
+          name: page
+          type: integer
+          description: Número de página.
+        - in: query
+          name: sort
+          type: string
+          enum: ['asc', 'desc']
+          description: Orden de clasificación (ascendente o descendente).
+        - in: query
+          name: query
+          type: string
+          description: Categoría de productos a filtrar.
+        - in: query
+          name: minPrice
+          type: number
+          description: Precio mínimo de los productos a filtrar.
+        - in: query
+          name: maxPrice
+          type: number
+          description: Precio máximo de los productos a filtrar.
+      responses:
+        '200':
+          description: Lista de productos paginada.
+          content:
+            application/json:
+              example:
+                productos: []
+                pagination:
+                  totalDocs: 0
+                  totalPages: 0
+                  page: 1
+                  limit: 10
+                  hasPrevPage: false
+                  hasNextPage: false
+        '400':
+          description: Error en la solicitud. Puede deberse a parámetros incorrectos.
+          content:
+            application/json:
+              example:
+                mensaje: 'Error en la solicitud. Parámetros incorrectos.'
+        '401':
+          description: No autorizado. El usuario debe iniciar sesión.
+          content:
+            application/json:
+              example:
+                mensaje: 'No autorizado. El usuario debe iniciar sesión.'
+        '500':
+          description: Error en el servidor. Consulta el registro de errores para más detalles.
+          content:
+            application/json:
+              example:
+                mensaje: 'Error en el servidor.'
+                error: 'Descripción detallada del error.'
+  /product/add:
+    get:
+      summary: Obtener la página para agregar un nuevo producto.
+      tags:
+        - Products
+      responses:
+        '200':
+          description: Página para agregar un nuevo producto.
+          content:
+            text/html:
+              example: 'Página de agregar producto renderizada con éxito.'
+        '500':
+          description: Error en el servidor al intentar obtener la página.
+          content:
+            application/json:
+              example:
+                mensaje: 'Error en el servidor al intentar obtener la página.'
+                error: 'Descripción detallada del error.'
+  /product/edit/{id}:
+    get:
+      summary: Obtener la página para editar un producto.
+      tags:
+        - Products
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: ID del producto a editar.
+      responses:
+        '200':
+          description: Página para editar un producto.
+          content:
+            text/html:
+              example: 'Página de editar producto renderizada con éxito.'
+        '404':
+          description: Producto no encontrado.
+          content:
+            text/plain:
+              example: 'Producto no encontrado'
+        '500':
+          description: Error en el servidor al intentar obtener la página.
+          content:
+            application/json:
+              example:
+                mensaje: 'Error en el servidor al intentar obtener la página.'
+                error: 'Descripción detallada del error.'
+  /product/{_id}:
+      get:
+        summary: Obtener detalles de un producto.
+        tags:
+          - Products
+        parameters:
+          - in: path
+            name: _id
+            required: true
+            schema:
+              type: string
+            description: ID del producto para obtener detalles.
+        responses:
+          '200':
+            description: Detalles del producto.
+            content:
+              application/json:
+                example:
+                  product:
+                    _id: "1234567890"
+                    nombre: "Nombre del Producto"
+                    descripcion: "Descripción del producto."
+                    precio: 29.99
+                    categoria: "Electrónicos"
+                    imagen: "url_de_la_imagen.jpg"
+                    disponibilidad: true
+                    createdAt: "2023-01-01T12:00:00.000Z"
+                    stock: "En stock"
+          '404':
+            description: Producto no encontrado.
+            content:
+              application/json:
+                example:
+                  mensaje: 'Producto no encontrado.'
+          '500':
+            description: Error en el servidor al intentar obtener detalles del producto.
+            content:
+              application/json:
+                example:
+                  mensaje: 'Error en el servidor al intentar obtener detalles del producto.'
+                  error: 'Descripción detallada del error.'
+  /my-products:
+      get:
+        summary: Obtener los productos del usuario.
+        tags:
+          - Products
+        security:
+          - sessionAuth: []
+        responses:
+          '200':
+            description: Lista de productos del usuario.
+            content:
+              application/json:
+                example:
+                  productos:
+                    - _id: "1234567890"
+                      nombre: "Producto 1"
+                      descripcion: "Descripción del producto 1."
+                      precio: 19.99
+                      categoria: "Electrónicos"
+                      imagen: "url_imagen_1.jpg"
+                      disponibilidad: true
+                      createdAt: "2023-01-01T12:00:00.000Z"
+                      stock: "En stock"
+                    - _id: "0987654321"
+                      nombre: "Producto 2"
+                      descripcion: "Descripción del producto 2."
+                      precio: 24.99
+                      categoria: "Ropa"
+                      imagen: "url_imagen_2.jpg"
+                      disponibilidad: false
+                      createdAt: "2023-01-02T14:30:00.000Z"
+                      stock: "Agotado"
+          '401':
+            description: Usuario no autenticado.
+            content:
+              application/json:
+                example:
+                  mensaje: 'Usuario no autenticado.'
+          '500':
+            description: Error en el servidor al obtener los productos del usuario.
+            content:
+              application/json:
+                example:
+                  mensaje: 'Error en el servidor al obtener los productos del usuario.'
+                  error: 'Descripción detallada del error.'
+  /limpiar/{productId}:
+      delete:
+        summary: Eliminar un producto por su ID.
+        tags:
+          - Products
+        security:
+          - sessionAuth: []
+        parameters:
+          - in: path
+            name: productId
+            required: true
+            schema:
+              type: string
+            description: ID del producto a eliminar.
+        responses:
+          '200':
+            description: Producto eliminado con éxito.
+            content:
+              application/json:
+                example:
+                  success: true
+                  mensaje: 'Producto eliminado con éxito'
+          '400':
+            description: ID de producto inválido.
+            content:
+              application/json:
+                example:
+                  success: false
+                  mensaje: 'ID de producto inválido'
+          '404':
+            description: Producto no encontrado.
+            content:
+              application/json:
+                example:
+                  success: false
+                  mensaje: 'Producto no encontrado'
+          '500':
+            description: Error en el servidor al eliminar el producto.
+            content:
+              application/json:
+                example:
+                  success: false
+                  mensaje: 'Error en el servidor al eliminar el producto'

@@ -1,0 +1,232 @@
+paths:
+  /cart:
+    get:
+      summary: Ver el contenido del carrito de compras.
+      tags:
+        - Cart
+      security:
+        - sessionAuth: []
+      responses:
+        '200':
+          description: Contenido del carrito obtenido con éxito.
+          content:
+            text/html:
+              example: 'Página de carrito renderizada con éxito.'
+        '500':
+          description: Error en el servidor al obtener el contenido del carrito.
+          content:
+            application/json:
+              example:
+                mensaje: 'Error en el servidor al obtener el contenido del carrito'
+  /completado:
+      get:
+        summary: Ver la página de compra completada.
+        tags:
+          - Cart
+        security:
+          - sessionAuth: []
+        responses:
+          '200':
+            description: Página de compra completada renderizada con éxito.
+            content:
+              text/html:
+                example: 'Página de compra completada renderizada con éxito.'
+          '500':
+            description: Error en el servidor al intentar obtener la página de compra completada.
+            content:
+              application/json:
+                example:
+                  mensaje: 'Error en el servidor al intentar obtener la página de compra completada.'
+                  error: 'Descripción detallada del error.'
+  /agregar-al-carrito/{productoId}:
+    post:
+      summary: Agregar un producto al carrito.
+      tags:
+        - Cart
+      parameters:
+        - in: path
+          name: productoId
+          required: true
+          description: ID del producto a agregar al carrito.
+          schema:
+            type: string
+        - in: body
+          name: body
+          required: true
+          description: Cantidad del producto a agregar.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  quantity:
+                    type: integer
+                    description: Cantidad del producto a agregar al carrito.
+                    example: 2
+      security:
+        - sessionAuth: []
+      responses:
+        '302':
+          description: Redirecciona a la página principal después de agregar el producto al carrito.
+        '403':
+          description: No autorizado para agregar el producto al carrito.
+          content:
+            application/json:
+              example:
+                message: 'No puedes agregar tus propios productos al carrito.'
+        '404':
+          description: Producto no encontrado.
+          content:
+            application/json:
+              example:
+                message: 'El producto no se encuentra.'
+        '500':
+          description: Error en el servidor al agregar el producto al carrito.
+          content:
+            application/json:
+              example:
+                message: 'Error en el servidor.'
+  /finalizar-compra:
+      post:
+        summary: Completar la compra y generar un ticket.
+        tags:
+          - Cart
+        security:
+          - sessionAuth: []
+        responses:
+          '200':
+            description: Compra completada con éxito.
+            content:
+              application/json:
+                example:
+                  message: 'Compra completada con éxito'
+                  OrderId: 'ID_de_la_orden_generada'
+                  success: true
+                  productsNotPurchased: []
+          '201':
+            description: Algunos productos no fueron comprados por falta de stock.
+            content:
+              application/json:
+                example:
+                  message: 'Algunos productos no fueron comprados por falta de stock'
+                  OrderId: 'ID_de_la_orden_generada'
+                  success: false
+                  productsNotPurchased:
+                    - producto: 'ID_del_producto'
+                      cantidad: 2
+                      precioUnitario: 20.5
+                      nombre: 'Nombre_del_producto'
+                      imagen: 'URL_de_la_imagen'
+          '400':
+            description: Carrito vacío.
+            content:
+              application/json:
+                example:
+                  message: 'El carrito está vacío.'
+          '500':
+            description: Error en el servidor al completar la compra.
+            content:
+              application/json:
+                example:
+                  message: 'Error en el servidor.'
+  /limpiar-carrito:
+      delete:
+        summary: Limpiar el carrito del usuario.
+        tags:
+          - Cart
+        security:
+          - sessionAuth: []
+        responses:
+          '204':
+            description: Carrito limpiado con éxito.
+          '500':
+            description: Error en el servidor al limpiar el carrito.
+            content:
+              application/json:
+                example:
+                  message: 'Error en el servidor.'
+  /limpiar/{productId}:
+      delete:
+        summary: Eliminar un producto específico del carrito.
+        tags:
+          - Cart
+        parameters:
+          - in: path
+            name: productId
+            required: true
+            description: ID del producto a eliminar del carrito.
+            schema:
+              type: string
+        security:
+          - sessionAuth: []
+        responses:
+          '200':
+            description: Producto eliminado del carrito con éxito.
+            content:
+              application/json:
+                example:
+                  success: true
+                  mensaje: 'Producto eliminado del carrito con éxito'
+          '404':
+            description: Producto o carrito no encontrado.
+            content:
+              application/json:
+                example:
+                  success: false
+                  mensaje: 'Producto no encontrado en el carrito'
+          '500':
+            description: Error en el servidor al eliminar el producto del carrito.
+            content:
+              application/json:
+                example:
+                  success: false
+                  mensaje: 'Error en el servidor'
+  /cart/update-quantity/{productId}:
+      put:
+        summary: Actualizar la cantidad de un producto en el carrito.
+        tags:
+          - Cart
+        parameters:
+          - in: path
+            name: productId
+            required: true
+            description: ID del producto cuya cantidad se actualizará.
+            schema:
+              type: string
+          - in: body
+            name: body
+            required: true
+            description: Cantidad actualizada del producto.
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    newQuantity:
+                      type: integer
+                      description: Nueva cantidad del producto en el carrito.
+                      example: 3
+        security:
+          - sessionAuth: []
+        responses:
+          '200':
+            description: Cantidad actualizada con éxito.
+            content:
+              application/json:
+                example:
+                  success: true
+                  mensaje: 'Cantidad actualizada con éxito'
+          '404':
+            description: Producto no encontrado en el carrito.
+            content:
+              application/json:
+                example:
+                  success: false
+                  mensaje: 'Producto no encontrado en el carrito'
+          '500':
+            description: Error en el servidor al actualizar la cantidad del producto en el carrito.
+            content:
+              application/json:
+                example:
+                  success: false
+                  mensaje: 'Error en el servidor'

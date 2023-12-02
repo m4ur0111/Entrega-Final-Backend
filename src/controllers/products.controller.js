@@ -21,7 +21,7 @@ async function getProducts(req, res) {
             queryOptions.categoria = query;
         }
 
-        if (minPrice) {
+        if (minPrice) { 
             queryOptions.precio = { $gte: parseFloat(minPrice) };
         }
 

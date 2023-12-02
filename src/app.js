@@ -1,10 +1,11 @@
 require('dotenv').config();
+const swaggerJsdoc = require('swagger-jsdoc');
+const swaggerUiExpress = require('swagger-ui-express');
 const express = require('express');
 const mongoose = require('mongoose');
 const path = require('path');
 const app = express();
 const http = require('http').createServer(app);
-const io = require('socket.io')(http);
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
 const initializePassport = require('./config/passport.config');
@@ -20,6 +21,22 @@ app.set("views", path.join(__dirname, "views"));
 app.use(express.static(path.join(__dirname, "views")));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+
+//Configuracion de Swagger para la documentación
+const SwaggerOptions = {
+    definition: {
+        openapi: '3.0.1',
+        info: {
+            title: "Documentacion de API",
+            description: "API para productos y carrito",
+            version: '1.0.0',
+        },
+    },
+    apis: [`${__dirname}/docs/**/*.yaml`]
+}
+
+const specs = swaggerJsdoc(SwaggerOptions)
+app.use('/apidocs', swaggerUiExpress.serve, swaggerUiExpress.setup(specs))
 
 // Configuración de middleware de cookie-parser
 app.use(cookieParser());
