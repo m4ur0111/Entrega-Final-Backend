@@ -29,7 +29,7 @@ const SwaggerOptions = {
         info: {
             title: "Documentacion de API",
             description: "API para productos y carrito",
-            version: '1.0.0',
+            version: '1.0.3',
         },
     },
     apis: [`${__dirname}/docs/**/*.yaml`]

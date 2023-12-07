@@ -177,7 +177,6 @@ async function deleteProduct(req, res) {
     }
 }
 
-
 module.exports = {
     getProducts,
     renderAddProductPage,

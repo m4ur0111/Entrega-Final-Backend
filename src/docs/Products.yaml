@@ -35,7 +35,7 @@ paths:
           description: Lista de productos paginada.
           content:
             application/json:
-              example:
+              example: 
                 productos: []
                 pagination:
                   totalDocs: 0
@@ -44,6 +44,15 @@ paths:
                   limit: 10
                   hasPrevPage: false
                   hasNextPage: false
+          schema:
+            type: object
+            properties:
+              productos:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
+              pagination:
+                $ref: '#/components/schemas/Pagination'
         '400':
           description: Error en la solicitud. Puede deberse a parámetros incorrectos.
           content:
@@ -63,82 +72,217 @@ paths:
               example:
                 mensaje: 'Error en el servidor.'
                 error: 'Descripción detallada del error.'
-  /product/add:
-    get:
-      summary: Obtener la página para agregar un nuevo producto.
+    post:
+      summary: Crear un nuevo producto.
       tags:
         - Products
+      requestBody:
+        required: true
+        content:
+          application/json:
+            example:
+              nombre: "Nombre del Producto"
+              descripcion: "Descripción del producto."
+              precio: 29.99
+              categoria: "Electrónicos"
+              imagen: "url_de_la_imagen.jpg"
+              disponibilidad: true
+          schema:
+            $ref: '#/components/schemas/Product'
       responses:
-        '200':
-          description: Página para agregar un nuevo producto.
-          content:
-            text/html:
-              example: 'Página de agregar producto renderizada con éxito.'
-        '500':
-          description: Error en el servidor al intentar obtener la página.
+        '201':
+          description: Producto creado con éxito.
           content:
             application/json:
               example:
-                mensaje: 'Error en el servidor al intentar obtener la página.'
+                mensaje: 'Producto creado con éxito.'
+        '400':
+          description: Error en la solicitud. Puede deberse a datos incorrectos.
+          content:
+            application/json:
+              example:
+                mensaje: 'Error en la solicitud. Datos incorrectos.'
+        '401':
+          description: No autorizado. El usuario debe iniciar sesión.
+          content:
+            application/json:
+              example:
+                mensaje: 'No autorizado. El usuario debe iniciar sesión.'
+        '500':
+          description: Error en el servidor. Consulta el registro de errores para más detalles.
+          content:
+            application/json:
+              example:
+                mensaje: 'Error en el servidor.'
                 error: 'Descripción detallada del error.'
-  /product/edit/{id}:
+
+  /product/{_id}:
     get:
-      summary: Obtener la página para editar un producto.
+      summary: Obtener detalles de un producto.
       tags:
         - Products
       parameters:
         - in: path
-          name: id
+          name: _id
           required: true
           schema:
             type: string
-          description: ID del producto a editar.
+          description: ID del producto para obtener detalles.
       responses:
         '200':
-          description: Página para editar un producto.
-          content:
-            text/html:
-              example: 'Página de editar producto renderizada con éxito.'
-        '404':
-          description: Producto no encontrado.
-          content:
-            text/plain:
-              example: 'Producto no encontrado'
-        '500':
-          description: Error en el servidor al intentar obtener la página.
+          description: Detalles del producto.
           content:
             application/json:
               example:
-                mensaje: 'Error en el servidor al intentar obtener la página.'
+                $ref: '#/components/schemas/Product'
+        '404':
+          description: Producto no encontrado.
+          content:
+            application/json:
+              example:
+                mensaje: 'Producto no encontrado.'
+        '500':
+          description: Error en el servidor al intentar obtener detalles del producto.
+          content:
+            application/json:
+              example:
+                mensaje: 'Error en el servidor al intentar obtener detalles del producto.'
                 error: 'Descripción detallada del error.'
-  /product/{_id}:
+    put:
+      summary: Actualizar detalles de un producto.
+      tags:
+        - Products
+      parameters:
+        - in: path
+          name: _id
+          required: true
+          schema:
+            type: string
+          description: ID del producto a actualizar.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            example:
+              nombre: "Nuevo Nombre"
+              descripcion: "Nueva Descripción"
+              precio: 39.99
+              categoria: "Electrónicos"
+              imagen: "nueva_url_de_la_imagen.jpg"
+              disponibilidad: false
+          schema:
+            $ref: '#/components/schemas/Product'
+      responses:
+        '200':
+          description: Producto actualizado con éxito.
+          content:
+            application/json:
+              example:
+                mensaje: 'Producto actualizado con éxito.'
+        '400':
+          description: Error en la solicitud. Puede deberse a datos incorrectos.
+          content:
+            application/json:
+              example:
+                mensaje: 'Error en la solicitud. Datos incorrectos.'
+        '401':
+          description: No autorizado. El usuario debe iniciar sesión.
+          content:
+            application/json:
+              example:
+                mensaje: 'No autorizado. El usuario debe iniciar sesión.'
+        '404':
+          description: Producto no encontrado.
+          content:
+            application/json:
+              example:
+                mensaje: 'Producto no encontrado.'
+        '500':
+          description: Error en el servidor. Consulta el registro de errores para más detalles.
+          content:
+            application/json:
+              example:
+                mensaje: 'Error en el servidor.'
+                error: 'Descripción detallada del error.'
+  /product/add:
       get:
-        summary: Obtener detalles de un producto.
+        summary: Mostrar la página para agregar un nuevo producto.
+        tags:
+          - Products
+        responses:
+          '200':
+            description: Página de agregar producto renderizada con éxito.
+            content:
+              text/html:
+                example: Página de agregar producto HTML
+          '500':
+            description: Error en el servidor al intentar mostrar la página de agregar producto.
+            content:
+              application/json:
+                example:
+                  mensaje: 'Error en el servidor al intentar mostrar la página de agregar producto.'
+                  error: 'Descripción detallada del error.'
+      post:
+        summary: Agregar un nuevo producto.
+        tags:
+          - Products
+        requestBody:
+          required: true
+          content:
+            application/json:
+              example:
+                nombre: "Nombre del Producto"
+                descripcion: "Descripción del producto."
+                precio: 29.99
+                categoria: "Electrónicos"
+                imagen: "url_de_la_imagen.jpg"
+                disponibilidad: true
+            schema:
+              $ref: '#/components/schemas/Product'
+        responses:
+          '201':
+            description: Producto creado con éxito.
+            content:
+              application/json:
+                example:
+                  mensaje: 'Producto creado con éxito.'
+          '400':
+            description: Error en la solicitud. Puede deberse a datos incorrectos.
+            content:
+              application/json:
+                example:
+                  mensaje: 'Error en la solicitud. Datos incorrectos.'
+          '401':
+            description: No autorizado. El usuario debe iniciar sesión.
+            content:
+              application/json:
+                example:
+                  mensaje: 'No autorizado. El usuario debe iniciar sesión.'
+          '500':
+            description: Error en el servidor. Consulta el registro de errores para más detalles.
+            content:
+              application/json:
+                example:
+                  mensaje: 'Error en el servidor.'
+                  error: 'Descripción detallada del error.'
+  /product/edit/{id}:
+      get:
+        summary: Mostrar la página de edición de un producto.
         tags:
           - Products
         parameters:
           - in: path
-            name: _id
+            name: id
             required: true
             schema:
               type: string
-            description: ID del producto para obtener detalles.
+            description: ID del producto a editar.
         responses:
           '200':
-            description: Detalles del producto.
+            description: Página de edición de producto renderizada con éxito.
             content:
-              application/json:
-                example:
-                  product:
-                    _id: "1234567890"
-                    nombre: "Nombre del Producto"
-                    descripcion: "Descripción del producto."
-                    precio: 29.99
-                    categoria: "Electrónicos"
-                    imagen: "url_de_la_imagen.jpg"
-                    disponibilidad: true
-                    createdAt: "2023-01-01T12:00:00.000Z"
-                    stock: "En stock"
+              text/html:
+                example: Página de edición de producto HTML
           '404':
             description: Producto no encontrado.
             content:
@@ -146,64 +290,97 @@ paths:
                 example:
                   mensaje: 'Producto no encontrado.'
           '500':
-            description: Error en el servidor al intentar obtener detalles del producto.
+            description: Error en el servidor al intentar mostrar la página de edición de producto.
             content:
               application/json:
                 example:
-                  mensaje: 'Error en el servidor al intentar obtener detalles del producto.'
+                  mensaje: 'Error en el servidor al intentar mostrar la página de edición de producto.'
+                  error: 'Descripción detallada del error.'
+      post:
+        summary: Procesar la edición de un producto.
+        tags:
+          - Products
+        parameters:
+          - in: path
+            name: id
+            required: true
+            schema:
+              type: string
+            description: ID del producto a editar.
+        requestBody:
+          required: true
+          content:
+            application/json:
+              example:
+                nombre: "Nuevo Nombre"
+                descripcion: "Nueva Descripción"
+                precio: 39.99
+                categoria: "Electrónicos"
+                imagen: "nueva_url_de_la_imagen.jpg"
+                disponibilidad: false
+            schema:
+              $ref: '#/components/schemas/Product'
+        responses:
+          '200':
+            description: Producto actualizado con éxito.
+            content:
+              application/json:
+                example:
+                  mensaje: 'Producto actualizado con éxito.'
+          '400':
+            description: Error en la solicitud. Puede deberse a datos incorrectos.
+            content:
+              application/json:
+                example:
+                  mensaje: 'Error en la solicitud. Datos incorrectos.'
+          '401':
+            description: No autorizado. El usuario debe iniciar sesión.
+            content:
+              application/json:
+                example:
+                  mensaje: 'No autorizado. El usuario debe iniciar sesión.'
+          '404':
+            description: Producto no encontrado.
+            content:
+              application/json:
+                example:
+                  mensaje: 'Producto no encontrado.'
+          '500':
+            description: Error en el servidor. Consulta el registro de errores para más detalles.
+            content:
+              application/json:
+                example:
+                  mensaje: 'Error en el servidor.'
                   error: 'Descripción detallada del error.'
   /my-products:
       get:
-        summary: Obtener los productos del usuario.
+        summary: Obtener los productos creados por el usuario.
         tags:
           - Products
-        security:
-          - sessionAuth: []
         responses:
           '200':
-            description: Lista de productos del usuario.
+            description: Lista de productos del usuario renderizada con éxito.
             content:
-              application/json:
-                example:
-                  productos:
-                    - _id: "1234567890"
-                      nombre: "Producto 1"
-                      descripcion: "Descripción del producto 1."
-                      precio: 19.99
-                      categoria: "Electrónicos"
-                      imagen: "url_imagen_1.jpg"
-                      disponibilidad: true
-                      createdAt: "2023-01-01T12:00:00.000Z"
-                      stock: "En stock"
-                    - _id: "0987654321"
-                      nombre: "Producto 2"
-                      descripcion: "Descripción del producto 2."
-                      precio: 24.99
-                      categoria: "Ropa"
-                      imagen: "url_imagen_2.jpg"
-                      disponibilidad: false
-                      createdAt: "2023-01-02T14:30:00.000Z"
-                      stock: "Agotado"
+              text/html:
+                example: Página de mis productos HTML
           '401':
-            description: Usuario no autenticado.
+            description: No autorizado. El usuario debe iniciar sesión.
             content:
               application/json:
                 example:
-                  mensaje: 'Usuario no autenticado.'
+                  mensaje: 'No autorizado. El usuario debe iniciar sesión.'
           '500':
-            description: Error en el servidor al obtener los productos del usuario.
+            description: Error en el servidor al intentar mostrar la lista de productos del usuario.
             content:
               application/json:
                 example:
-                  mensaje: 'Error en el servidor al obtener los productos del usuario.'
+                  mensaje: 'Error en el servidor al intentar mostrar la lista de productos del usuario.'
                   error: 'Descripción detallada del error.'
   /limpiar/{productId}:
       delete:
-        summary: Eliminar un producto por su ID.
+        summary: Eliminar un producto por ID.
         tags:
           - Products
-        security:
-          - sessionAuth: []
         parameters:
           - in: path
             name: productId
@@ -217,26 +394,64 @@ paths:
             content:
               application/json:
                 example:
-                  success: true
-                  mensaje: 'Producto eliminado con éxito'
+                  mensaje: 'Producto eliminado con éxito.'
           '400':
-            description: ID de producto inválido.
+            description: Error en la solicitud. Puede deberse a un ID de producto inválido.
             content:
               application/json:
                 example:
-                  success: false
-                  mensaje: 'ID de producto inválido'
+                  mensaje: 'Error en la solicitud. ID de producto inválido.'
           '404':
             description: Producto no encontrado.
             content:
               application/json:
                 example:
-                  success: false
-                  mensaje: 'Producto no encontrado'
+                  mensaje: 'Producto no encontrado.'
           '500':
-            description: Error en el servidor al eliminar el producto.
+            description: Error en el servidor al intentar eliminar el producto.
             content:
               application/json:
                 example:
-                  success: false
-                  mensaje: 'Error en el servidor al eliminar el producto'
+                  mensaje: 'Error en el servidor al intentar eliminar el producto.'
+                  error: 'Descripción detallada del error.'              
+
+# Sección de componentes para esquemas reutilizables
+components:
+  schemas:
+    Product:
+      type: object
+      properties:
+        _id:
+          type: string
+        nombre:
+          type: string
+        descripcion:
+          type: string
+        precio:
+          type: number
+        categoria:
+          type: string
+        imagen:
+          type: string
+        disponibilidad:
+          type: boolean
+        createdAt:
+          type: string
+        stock:
+          type: string
+
+    Pagination:
+      type: object
+      properties:
+        totalDocs:
+          type: integer
+        totalPages:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+        hasPrevPage:
+          type: boolean
+        hasNextPage:
+          type: boolean

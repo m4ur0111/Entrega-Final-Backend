@@ -27,6 +27,4 @@ router.get('/product/:_id', productsController.viewProductDetails);
 //Ruta GET para ver los productos que el usuario creo
 router.get('/my-products', productsController.getMyProducts);
 
-
-
 module.exports = router;
