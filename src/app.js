@@ -61,7 +61,7 @@ initializePassport();
 
 // Conexion a la base de datos
 mongoose.connect(process.env.MONGODB_URI, {}).then(() => {
-    console.log("Conectado a la base de datos");
+    // console.log("Conectado a la base de datos");
 }).catch(error => {
     console.log("Error en la conexion", error);
 });
@@ -100,6 +100,9 @@ app.use((err, req, res, next) => {
 app.use('*', async (req, res) => {
     res.render('404');
 });
+
+// Exporta la instancia de Express
+module.exports = app;
 
 // Iniciar el servidor
 http.listen(PORT, () => {

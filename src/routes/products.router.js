@@ -7,7 +7,7 @@ const { requireLogin } = require('../middleware/authMiddleware');
 router.delete('/limpiar/:productId', productsController.deleteProduct);
 
 //Ruta GET para obtener los productos con variables
-router.get('/products', requireLogin, productsController.getProducts);
+router.get('/products', productsController.getProducts);
 
 //Ruta GET para la página de agregar producto
 router.get('/product/add' ,productsController.renderAddProductPage);
