@@ -38,28 +38,29 @@ async function registerUser(req, res) {
 function renderLoginPage(req, res) {
     res.render('login');
 }
+
 //FUNCION QUE AUN NO ES UTILIZADA CORRECTAMENTE
-async function renderChatPage(req, res) {
-    try {
-        const userId = req.session.userId;
-        const usuario = await userModel.findById(userId);
+// async function renderChatPage(req, res) {
+//     try {
+//         const userId = req.session.userId;
+//         const usuario = await userModel.findById(userId);
 
-        if (!usuario) {
-            req.logger.error('Usuario no encontrado:', userId);
-            console.log("usuario no encontrado")
-            return; 
-        }
+//         if (!usuario) {
+//             req.logger.error('Usuario no encontrado:', userId);
+//             console.log("usuario no encontrado")
+//             return; 
+//         }
 
-        res.render('chat', {
-            nombreUsuario: usuario.nombre,
-            rol: usuario.rol,
-            userId: usuario.id,
-        });
-    } catch (error) {
-        req.logger.error('Error en el servidor:', error);
-        errorHandlers.customErrorHandler('errorServidor', res);
-    }
-}
+//         res.render('chat', {
+//             nombreUsuario: usuario.nombre,
+//             rol: usuario.rol,
+//             userId: usuario.id,
+//         });
+//     } catch (error) {
+//         req.logger.error('Error en el servidor:', error);
+//         errorHandlers.customErrorHandler('errorServidor', res);
+//     }
+// }
 
 //Iniciar sesión del usuario
 async function loginUser(req, res) {
@@ -180,7 +181,6 @@ module.exports = {
     renderLoginPage,
     loginUser,
     logoutUser,
-    renderChatPage,
     renderProfile,
     checkUserRole,
     changeUserRole,

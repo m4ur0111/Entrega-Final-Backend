@@ -19,7 +19,7 @@ router.post('/login', usersController.loginUser);
 router.get('/logout', usersController.logoutUser);
 
 //Ruta para acceder al chat
-router.get('/chat', requireLogin, usersController.renderChatPage);
+// router.get('/chat', requireLogin, usersController.renderChatPage);
 
 //Ruta para acceder al perfil
 router.get('/perfil', requireLogin, usersController.renderProfile);
@@ -28,6 +28,6 @@ router.get('/perfil', requireLogin, usersController.renderProfile);
 router.post('/premium', requireLogin, usersController.changeUserRole);
 
 //Ruta para ver el listado de usuarios
-router.get('/rol-usuario', requireLogin, usersController.renderAllUsers);
+router.get('/rol-usuario', usersController.renderAllUsers);
 
 module.exports = router;
