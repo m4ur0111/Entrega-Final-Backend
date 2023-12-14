@@ -1,5 +1,5 @@
-# 1° Integrador Backend
-Primer integrador del curso de backend de CoderHouse orientado a la creación de un ecommerce con Express, MongoDB, Mongoose, Handlebars.
+# 4° Integrador Backend
+Cuarta practica integradora del curso de backend de CoderHouse orientado a la creación de un ecommerce con Express, MongoDB, Mongoose, Handlebars.
 
 ## Instalación
 1. Clona el repositorio.
