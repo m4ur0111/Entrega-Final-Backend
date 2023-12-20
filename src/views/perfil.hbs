@@ -33,17 +33,70 @@
             <h1>Bienvenido a tu perfil {{nombreUsuario}}</h1>
             <h2>Tu rol es: {{ userRol }}</h2>
             <p>Tu id es: {{userId}}</p>
+
+            <div class="contenedor-document">
+                <div class="document">
+                    <h3>
+                        {{#if (isDocumentLoaded "identificacion.pdf" documents)}}
+                            <span class="document-icon">✔️</span> 
+                        {{else}}
+                            <span class="document-icon">❌</span>
+                        {{/if}}
+                        Identificación
+                    </h3>
+                    <form action="/{{userId}}/documents" method="post" enctype="multipart/form-data">
+                        <label for="identification">Subir Documento:</label>
+                        <input type="file" name="documents" id="identification" fieldname="identification">
+                        <button type="submit">Subir Documento</button>
+                    </form>
+                </div>
+
+                <div class="document">
+                    <h3>
+                        {{#if (isDocumentLoaded "comprobantecuenta.pdf" documents)}}
+                            <span class="document-icon">✔️</span>
+                        {{else}}
+                            <span class="document-icon">❌</span> 
+                        {{/if}}
+                        Comprobante de Cuenta
+                    </h3>
+                    <form action="/{{userId}}/documents" method="post" enctype="multipart/form-data">
+                        <label for="accountProof">Subir Documento:</label>
+                        <input type="file" name="documents" id="accountProof" fieldname="accountProof">
+                        <button type="submit">Subir Documento</button>
+                    </form>
+                </div>
+
+                <div class="document">
+                    <h3>
+                        {{#if (isDocumentLoaded "comprobantedomicilio.pdf" documents)}}
+                            <span class="document-icon">✔️</span> 
+                        {{else}}
+                            <span class="document-icon">❌</span> 
+                        {{/if}}
+                        Comprobante de Domicilio
+                    </h3>
+                    <form action="/{{userId}}/documents" method="post" enctype="multipart/form-data">
+                        <label for="accountAdress">Subir Documento:</label>
+                        <input type="file" name="documents" id="accountAdress" fieldname="accountAdress">
+                        <button type="submit">Subir Documento</button>
+                    </form>
+                </div>
+            </div>
+
             <form action="/enviar-correo" method="post">
                 <input type="hidden" name="nombre" value="{{nombreUsuario}}">
                 <input type="hidden" name="email" value="{{userEmail}}">
                 <button class="reset-password-button" type="submit">Restablecer Contraseña</button>
             </form>
+
             {{#if isPremium}}
                 <h1>Listado de sus productos creados</h1>
                 <form action="/my-products">
                     <button class="reset-password-button">Ver mis productos</button>
                 </form>
             {{/if}}
+            
             {{#if isAdmin}}
                 <h1>Cambiar el rol de un usuario por su ID</h1>
                 <form action="/rol-usuario">

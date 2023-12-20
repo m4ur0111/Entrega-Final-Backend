@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs');
 const userDao = require('../dao/user.dao');
+const path = require('path');
 const { userModel } = require('../models/user.model');
 const errorHandlers = require('../services/errors/errorHandler');
 const { getUserRoleFromDatabase } = require('../utils/function');
@@ -39,29 +40,6 @@ function renderLoginPage(req, res) {
     res.render('login');
 }
 
-//FUNCION QUE AUN NO ES UTILIZADA CORRECTAMENTE
-// async function renderChatPage(req, res) {
-//     try {
-//         const userId = req.session.userId;
-//         const usuario = await userModel.findById(userId);
-
-//         if (!usuario) {
-//             req.logger.error('Usuario no encontrado:', userId);
-//             console.log("usuario no encontrado")
-//             return; 
-//         }
-
-//         res.render('chat', {
-//             nombreUsuario: usuario.nombre,
-//             rol: usuario.rol,
-//             userId: usuario.id,
-//         });
-//     } catch (error) {
-//         req.logger.error('Error en el servidor:', error);
-//         errorHandlers.customErrorHandler('errorServidor', res);
-//     }
-// }
-
 //Iniciar sesión del usuario
 async function loginUser(req, res) {
     try {
@@ -99,27 +77,28 @@ function logoutUser(req, res) {
 
 //Renderiza la vista del perfil del usuario
 async function renderProfile(req, res) {
-    const userId = req.session.userId;
-    const usuario = await userModel.findById(userId);
-    const userRole = await getUserRoleFromDatabase(userId);
+    try {
+        const userId = req.session.userId;
+        const usuario = await userModel.findById(userId);
 
-    let isPremium = false;
-    let isAdmin = false;
+        // Verificar si el usuario tiene documentos cargados
+        const hasDocuments = usuario.documents && usuario.documents.length > 0;
 
-    if (userRole === 'premium') {
-        isPremium = true;
-    }else if (userRole === 'admin'){
-        isAdmin = true;
+        res.render('perfil', {
+            userId: usuario.id,
+            nombreUsuario: usuario.nombre,
+            userEmail: usuario.email,
+            userRol: usuario.rol,
+            isPremium: usuario.rol === 'premium',
+            isAdmin: usuario.rol === 'admin',
+            profilePhoto: usuario.profilePhoto,
+            hasDocuments: hasDocuments,
+            documents: usuario.documents,
+        });
+    } catch (error) {
+        console.error('Error al renderizar el perfil:', error);
+        res.status(500).json({ mensaje: 'Error en el servidor' });
     }
-
-    res.render('perfil', {
-        userId: usuario.id,
-        nombreUsuario: usuario.nombre,
-        userEmail: usuario.email,
-        userRol: usuario.rol,
-        isPremium,
-        isAdmin,
-    })
 }
 
 //Funcion para verificar el rol del usuario
@@ -141,15 +120,33 @@ async function checkUserRole(req, res) {
 }
 
 //Cambiar el rol del usuario a premium o user
+// Verificar el rol del usuario
+async function checkUserRole(userId) {
+    try {
+        const user = await userModel.findById(userId);
+
+        // Verificar si el array documents tiene exactamente 3 elementos
+        return user && user.documents && user.documents.length === 3;
+    } catch (error) {
+        console.error(error);
+        return false;
+    }
+}
+
+// Cambiar el rol del usuario a premium o user
 async function changeUserRole(req, res) {
     try {
         const userIdToUpdate = req.body.userIdToUpdate;
         const newRole = req.body.newRole;
 
-        //Verifica si el usuario actual tiene permisos para cambiar roles
-        await checkUserRole(req, res);
+        // Verifica si el usuario al que le estás cambiando el rol tiene los documentos cargados
+        const hasRequiredDocuments = await checkUserRole(userIdToUpdate);
 
-        //Verifica si el nuevo rol es válido (user o premium)
+        if (!hasRequiredDocuments) {
+            return res.status(400).json({ message: 'El usuario no tiene los documentos requeridos cargados.' });
+        }
+
+        // Verifica si el nuevo rol es válido (user o premium)
         if (newRole !== 'user' && newRole !== 'premium') {
             return res.status(400).json({ message: 'Rol no válido. Use "user" o "premium".' });
         }
@@ -164,15 +161,88 @@ async function changeUserRole(req, res) {
             return res.status(404).json({ message: 'Usuario no encontrado' });
         }
 
-        res.status(200).json({ message: `Rol del usuario ${userIdToUpdate} actualizado a ${newRole}` });
+        res.status(200).json({ message: 'Usuario actualizado correctamente.' });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Error en el servidor' });
     }
 }
 
+//Renderizar la pagina para cambiar el rol del usuario
 async function renderAllUsers(req, res) {
     res.render('change-rol');
+}
+
+//Funcion para subir los archivos de los usuarios
+async function uploadDocuments(req, res) {
+    try {
+        const userId = req.params.uid;
+        const user = await userModel.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
+        }
+
+        // Verificar si se están subiendo documentos
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).json({ success: false, message: 'No se han proporcionado documentos' });
+        }
+
+        // Lógica para manejar los documentos subidos
+        const newDocuments = req.files.map(file => {
+            return {
+                name: file.originalname,
+                reference: file.filename,
+            };
+        });
+
+        // Agregar los nuevos documentos al array si no existen
+        for (const newDoc of newDocuments) {
+            const existingDocIndex = user.documents.findIndex(doc => doc.name === newDoc.name);
+            if (existingDocIndex === -1) {
+                user.documents.push(newDoc);
+            } else {
+                // Reemplazar el documento existente
+                user.documents[existingDocIndex] = newDoc;
+            }
+        }
+
+        await user.save();
+
+        res.status(200).json({ success: true, message: 'Documentos subidos exitosamente' });
+    } catch (error) {
+        console.error('Error al subir los documentos:', error);
+        res.status(500).json({ success: false, message: 'Error interno del servidor' });
+    }
+}
+
+//Funcion para verificar si estan cargados los documentos
+async function updateToPremium(req, res) {
+    try {
+        const userId = req.params.uid;
+    
+        // Verifica si el usuario ha cargado los documentos requeridos
+        const user = await userModel.findById(userId);
+    
+        const requiredDocuments = ['identificacion.pdf', 'comprobantedomicilio.pdf', 'comprobanteestado.pdf'];
+
+        const hasRequiredDocuments = requiredDocuments.every(docName =>
+            user.documents.some(doc => doc.name === docName)
+        );
+
+        if (!hasRequiredDocuments) {
+            return res.status(400).json({ message: 'Por favor, carga los documentos requeridos primero.' });
+        }
+    
+        // Actualiza al usuario a premium
+        user.rol = 'premium';
+        await user.save();
+    
+        res.status(200).json({ message: 'Usuario actualizado a premium.' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error al actualizar al usuario a premium.' });
+    }
 }
 
 module.exports = {
@@ -185,4 +255,6 @@ module.exports = {
     checkUserRole,
     changeUserRole,
     renderAllUsers,
+    updateToPremium,
+    uploadDocuments,
 };

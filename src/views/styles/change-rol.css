@@ -107,3 +107,21 @@ button {
 button:hover {
     background-color: #45a049;
 }
+
+select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    appearance: none;
+    background: url('data:image/svg+xml;utf8,<svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="%23333%"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>') no-repeat right 10px center/15px 15px;
+    cursor: pointer;
+}
+
+/* Estilos para las opciones del desplegable */
+select option {
+    background-color: #fff;
+    color: #333;
+}

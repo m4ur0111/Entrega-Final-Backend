@@ -8,7 +8,15 @@ const userSchema = new mongoose.Schema({
     edad: { type: Number, required: true },
     email: { type: String, required: true, max: 100 },
     pass: { type: String, max: 50 },
-    rol: { type: String, default: 'user' }, //Rol por defecto: 'user'
+    rol: { type: String, default: 'user' },
+    documents: [
+        {
+            name: { type: String, required: true },
+            reference: { type: String, required: true }
+        }
+    ],
+    last_connection: { type: Date },
+    profilePhoto: { type: String }
 });
 
 // Agregar el método personalizado findById

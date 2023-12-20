@@ -1,4 +1,4 @@
-*{
+* {
     font-family: 'Montserrat', sans-serif;
     margin: 0;
     padding: 0;
@@ -61,16 +61,16 @@
     margin: 2rem;
 }
 
-h1{
+h1 {
     margin: 15px;
 }
 
-h2{
+h2 {
     margin: 15px;
 }
 
-p{
-    margin: 5px;
+p {
+    margin: 1rem;
 }
 
 .reset-password-button {
@@ -87,3 +87,52 @@ p{
 .reset-password-button:hover {
     background-color: #2980b9;
 }
+
+/* Estilos para el formulario de subir documentos */
+form {
+    margin-top: 20px;
+}
+
+.document {
+    margin-bottom: 20px;
+    margin: 1rem;
+}
+
+.contenedor-document{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+}
+
+h3 {
+    display: inline-block;
+    margin: 0;
+}
+
+form {
+    margin-top: 10px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+input[type="file"] {
+    margin-bottom: 10px;
+}
+
+button {
+    background-color: #4caf50;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
