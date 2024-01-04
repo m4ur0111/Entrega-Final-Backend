@@ -34,4 +34,10 @@ router.post('/:uid/documents', uploadDocument, usersController.uploadDocuments);
 //Ruta para ver el listado de usuarios
 router.get('/rol-usuario', usersController.renderAllUsers);
 
+//Ruta para obtener a todos los usuarios con sus datos
+router.get('/all-users', usersController.getAllUsersWithBasicInfo);
+
+//Ruta para eliminar usuarios inactivos
+router.delete('/delete-inactive-users', usersController.eliminarUsuariosInactivos);
+
 module.exports = router;

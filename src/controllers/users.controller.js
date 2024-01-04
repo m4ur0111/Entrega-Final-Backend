@@ -245,6 +245,92 @@ async function updateToPremium(req, res) {
     }
 }
 
+// Obtener todos los usuarios con datos principales
+async function getAllUsersWithBasicInfo(req, res) {
+    try {
+        const users = await userModel.find({}, { nombre: 1, apellido: 1, edad: 1, email: 1, rol: 1 });
+    
+        if (req.accepts('html')) {
+            res.render('all-users', { users });
+        } else {
+            res.json(users);
+        }
+        } catch (error) {
+        console.error('Error al obtener usuarios con datos principales:', error);
+        res.status(500).json({ error: 'Error al obtener usuarios' });
+    }
+}
+
+// Modifica la función enviarCorreosAUsuariosEliminados
+async function enviarCorreosAUsuariosEliminados(usuarios) {
+    if (usuarios && usuarios.deletedCount !== undefined) {
+        // Si usuarios es un objeto con deletedCount, entonces es el resultado de deleteMany
+        console.log(`${usuarios.deletedCount} usuarios eliminados exitosamente.`);
+
+        if (usuarios.deletedCount > 0) {
+            // Itera sobre los usuarios eliminados solo si se eliminaron algunos
+            for (const usuario of usuarios.result) {
+                try {
+                    const { nombre, email } = usuario;
+
+                    // Lógica para enviar el correo a cada usuario eliminado
+                    await enviarCorreo({ nombre, email }, (error, resultado) => {
+                        if (error) {
+                            console.log(`Error al enviar correo a ${email}: ${error}`);
+                        } else {
+                            console.log(`Correo enviado a ${email}: ${resultado}`);
+                        }
+                    });
+                } catch (error) {
+                    console.error('Error al enviar correos electrónicos:', error);
+                }
+            }
+
+            // Devuelve un objeto indicando que se eliminaron usuarios
+            return { eliminados: true, cantidad: usuarios.deletedCount };
+        } else {
+            console.log('No se encontraron usuarios inactivos para eliminar.');
+
+            // Devuelve un objeto indicando que no se eliminaron usuarios
+            return { eliminados: false, cantidad: 0 };
+        }
+    } else if (Array.isArray(usuarios)) {
+        // Si usuarios es un array, entonces es el resultado de find y no se eliminaron usuarios
+        console.log('No se encontraron usuarios inactivos para eliminar.');
+
+        // Devuelve un objeto indicando que no se eliminaron usuarios
+        return { eliminados: false, cantidad: 0 };
+    } else {
+        console.log('Resultado inesperado de deleteMany:', usuarios);
+
+        // Devuelve un objeto indicando un resultado inesperado
+        return { eliminados: false, cantidad: 0 };
+    }
+}
+
+// Modifica la función eliminarUsuariosInactivos
+async function eliminarUsuariosInactivos(req, res) {
+    try {
+        // Obtén la fecha actual menos 2 días
+        const fechaLimite = new Date(Date.now() - (2 * 24 * 60 * 60 * 1000));
+
+        // Construye la condición para encontrar usuarios inactivos
+        const condicion = { last_connection: { $lt: fechaLimite } };
+
+        // Encuentra y elimina los usuarios inactivos
+        const usuariosEliminados = await userModel.deleteMany(condicion);
+
+        // Envía correos electrónicos a los usuarios eliminados
+        await enviarCorreosAUsuariosEliminados(usuariosEliminados);
+
+        // Responde con un objeto JSON indicando la cantidad de usuarios eliminados
+        res.json({ cantidad: usuariosEliminados.deletedCount });
+    } catch (error) {
+        console.error('Error al eliminar usuarios inactivos:', error);
+        res.status(500).json({ mensaje: 'Error interno del servidor' });
+    }
+}
+
 module.exports = {
     renderRegisterPage,
     registerUser,
@@ -257,4 +343,6 @@ module.exports = {
     renderAllUsers,
     updateToPremium,
     uploadDocuments,
+    getAllUsersWithBasicInfo,
+    eliminarUsuariosInactivos,
 };

@@ -98,11 +98,49 @@
             {{/if}}
             
             {{#if isAdmin}}
+                <h1>Ver Listado completo de Usuarios</h1>
+                <form action="/all-users">
+                    <button class="reset-password-button">Ver Listado</button>
+                </form>
+
+                <form id="eliminarUsuariosForm">
+                    <button class="reset-password-button" type="button" onclick="eliminarUsuariosInactivos()">Eliminar Usuarios Inactivos</button>
+                </form>
+
                 <h1>Cambiar el rol de un usuario por su ID</h1>
                 <form action="/rol-usuario">
                     <button class="reset-password-button">Cambiar Rol</button>
                 </form>
             {{/if}}
         </div>
+
+    <script>
+        async function eliminarUsuariosInactivos() {
+            const confirmacion = confirm("¿Estás seguro de que deseas eliminar usuarios inactivos?");
+            
+            if (!confirmacion) {
+                // El usuario canceló la eliminación, no hagas nada
+                return;
+            }
+
+            try {
+                const response = await fetch('/delete-inactive-users', {
+                    method: 'DELETE',
+                });
+
+                const resultado = await response.json();
+
+                // Muestra un mensaje de alerta basado en la respuesta del servidor
+                if (response.ok) {
+                    alert(`Se eliminaron ${resultado.cantidad} usuarios.`);
+                } else {
+                    alert(`Error al eliminar usuarios: ${resultado.mensaje}`);
+                }
+            } catch (error) {
+                console.error('Error al eliminar usuarios inactivos:', error);
+                alert('Error al eliminar usuarios inactivos.');
+            }
+        }
+    </script>
 </body>
 </html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./styles/all-users.css">
+    <title>Listado de Usuarios</title>
+</head>
+<body>
+
+    <h1>Listado de Usuarios</h1>
+
+    <p>Total de Usuarios: {{users.length}}</p>
+
+    <table>
+        <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Apellido</th>
+            <th>Edad</th>
+            <th>Email</th>
+            <th>Rol</th>
+        </tr>
+        </thead>
+        <tbody>
+        {{#each users}}
+            <tr>
+            <td>{{nombre}}</td>
+            <td>{{apellido}}</td>
+            <td>{{edad}}</td>
+            <td>{{email}}</td>
+            <td>{{rol}}</td>
+            </tr>
+        {{/each}}
+        </tbody>
+    </table>
+
+    <div class="contenedor-boton">
+        <button><a href="/">Volver al Inicio</a></button>
+    </div>
+
+</body>
+</html>
