@@ -3,6 +3,7 @@ const productDao = require('../dao/products.dao');
 const Producto = require('../models/products.models');
 const errorHandlers = require('../services/errors/errorHandler');
 const { getUserRoleFromDatabase } = require('../utils/function');
+const nodemailer = require('nodemailer');
 
 //Ruta GET para obtener los productos con variables
 async function getProducts(req, res) {
@@ -150,7 +151,6 @@ async function getMyProducts(req, res) {
     }
 }
 
-// Agrega esto en tu controlador
 async function deleteProduct(req, res) {
     try {
         const productId = req.params.productId;
@@ -160,12 +160,44 @@ async function deleteProduct(req, res) {
             return res.status(400).json({ success: false, mensaje: 'ID de producto inválido' });
         }
 
+        // Obtener información del producto antes de eliminarlo
+        const productToDelete = await Producto.findById(productId);
+
         // Eliminar el producto por su ID
         const deletedProduct = await Producto.findByIdAndDelete(productId);
 
         if (!deletedProduct) {
             // El producto no fue encontrado
             return res.status(404).json({ success: false, mensaje: 'Producto no encontrado' });
+        }
+
+        // Verificar si el usuario es premium y enviar correo
+        if (productToDelete.userIsPremium) {
+            // Configurar el servicio de correo (Ejemplo usando Gmail)
+            const transporter = nodemailer.createTransport({
+                service: 'gmail',
+                auth: {
+                    user: 'tu_correo@gmail.com',
+                    pass: 'tu_contraseña'
+                }
+            });
+
+            // Configurar el correo electrónico
+            const mailOptions = {
+                from: 'tu_correo@gmail.com',
+                to: productToDelete.userEmail,
+                subject: 'Producto eliminado',
+                text: `Tu producto ${productToDelete.productName} ha sido eliminado.`
+            };
+
+            // Enviar el correo electrónico
+            transporter.sendMail(mailOptions, function(error, info){
+                if (error) {
+                    console.error('Error al enviar el correo:', error);
+                } else {
+                    console.log('Correo enviado:', info.response);
+                }
+            });
         }
 
         // Producto eliminado con éxito

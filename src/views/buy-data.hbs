@@ -1,0 +1,132 @@
+<!-- views/checkout.handlebars -->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        header {
+            background-color: #007bff;
+            padding: 1rem;
+            text-align: center;
+            color: white;
+        }
+
+        .container {
+            width: 80%;
+            margin: auto;
+        }
+
+        h1 {
+            color: #007bff;
+        }
+
+        form {
+            margin-top: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+        }
+
+        #card-element {
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        #submit-button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
+    <script src="https://js.stripe.com/v3/"></script>
+</head>
+<body>
+    <header>
+        <h1>Checkout</h1>
+    </header>
+
+    <div class="container">
+        <!-- Formulario para datos del usuario -->
+        <form id="user-info-form">
+            <label for="nombre">Nombre:</label>
+            <input type="text" id="nombre" name="nombre" required>
+
+            <label for="correo">Correo electrónico:</label>
+            <input type="email" id="correo" name="correo" required>
+        </form>
+
+        <hr>
+
+        <!-- Formulario para datos de la tarjeta -->
+        <form id="payment-form">
+            <!-- Detalles del formulario de pago -->
+            <div id="card-element"></div>
+            <button type="submit" id="submit-button">Pagar</button>
+        </form>
+    </div>
+
+    <script>
+        var stripe = Stripe('pk_test_51LXfAzCYV7e1KxbtAEAu6paDw5vPRVlpasIcPetFc69XLe2JBBpK0Z8KJSLXIhZznuJKADEhT0a5oFL5oY4P9WTH00jFfEZTZK');
+        var elements = stripe.elements();
+        var cardElement = elements.create('card');
+        cardElement.mount('#card-element');
+
+        var form = document.getElementById('payment-form');
+        var userInfoForm = document.getElementById('user-info-form');
+
+        form.addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            // Recopilar información del usuario
+            var nombre = userInfoForm.querySelector('#nombre').value;
+            var correo = userInfoForm.querySelector('#correo').value;
+
+            const { token, error } = await stripe.createToken(cardElement);
+
+            if (error) {
+                console.error(error);
+            } else {
+                // Adjuntar el token y datos del usuario a la solicitud y enviar al servidor
+                fetch('/finalizar-compra-stripe', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        payment_method: token.id,
+                        nombre: nombre,
+                        correo: correo,
+                    }),
+                }).then(response => {
+                    // Manejar la respuesta del servidor (puede redirigir a una página de confirmación, etc.)
+                    console.log(response);
+                });
+            }
+        });
+    </script>
+</body>
+</html>

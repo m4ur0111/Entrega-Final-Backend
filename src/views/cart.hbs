@@ -63,6 +63,8 @@
             <p>Total del carrito: ${{carrito.total}}</p>
             <!-- Botón para vaciar el carrito -->
             <button id="vaciar-carrito-btn" class="vaciar-carrito">Vaciar Carrito</button>
+            <!-- Contenedor para el elemento de tarjeta de Stripe -->
+            <div id="card-element"></div>
             <button id="finalizar-compra-btn" class="finalizar-compra">Finalizar Compra</button>
         </div>
         </div>
@@ -71,6 +73,7 @@
         {{/if}}
 
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="https://js.stripe.com/v3/"></script> <!-- Incluye la biblioteca de Stripe -->
         <script src="./js/delete-cart.js"></script>
         <script src="./js/delete-product.js"></script>
         <script src="./js/buy-complete.js"></script>

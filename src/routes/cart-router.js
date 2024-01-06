@@ -1,6 +1,8 @@
+require('dotenv').config();
 const express = require('express');
 const router = express.Router();
 const cartController = require('../controllers/cart.controller');
+const stripe = require('stripe')(process.env.KEY_STRIPE);
 const { requireLogin } = require('../middleware/authMiddleware');
 
 //Ruta GET para la página de carrito
@@ -23,5 +25,10 @@ router.delete('/limpiar/:productId', cartController.removeProductFromCart);
 
 //Ruta PUT para actualizar la cantidad de un producto en el carrito
 router.put('/cart/update-quantity/:productId', cartController.updateProductQuantity);
+
+//Ruta para renderizar la vista de los datos
+router.get('/completar-datos', cartController.renderDataPurchase);
+
+router.post('/finalizar-compra-stripe', cartController.completePurchaseWithStripe);
 
 module.exports = router;

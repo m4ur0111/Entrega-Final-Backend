@@ -76,9 +76,7 @@ if (process.env.NODE_ENV === 'development') {
     console.log("usando produccion");
 }
 
-// En tu archivo de configuración de Express o donde estés configurando EJS
 app.locals.isDocumentLoaded = function(documentName, documents) {
-    // Verifica si el documento está en la lista de documentos cargados
     return documents.some(doc => doc.name === documentName);
 };
 

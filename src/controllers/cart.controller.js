@@ -6,6 +6,7 @@ const generateCode = require('../utils/function');
 const { getUserRoleFromDatabase } = require('../utils/function');
 const moment = require('moment-timezone');
 const errorDictionary = require('../services/errors/errorDictionary')
+const stripe = require('stripe')('sk_test_51LXfAzCYV7e1Kxbt0g4Q7rFukBRrrBwHXDGjAYpLBRflp0MKW');
 
 //Ruta POST para agregar un producto al carrito
 const addToCart = async (req, res) => {
@@ -198,7 +199,6 @@ async function completePurchase(req, res) {
         }
     } catch (error) {
         req.logger.error('Error en el servidor:', error);
-        res.status(500).json({ message: errorMessages.errorServidor });
     }
 }
 
@@ -281,6 +281,42 @@ async function updateProductQuantity(req, res) {
     }
 }
 
+function renderDataPurchase(req, res) {
+    res.render('buy-data');
+}
+
+async function completePurchaseWithStripe(req, res) {
+    try {
+        const userId = req.session.userId;
+        const purchaserEmail = req.session.email;
+        const { token, nombre, correo } = req.body;
+
+        const carrito = await cartDao.getCartByUserId(userId);
+
+        // Resto del código para crear la orden y realizar la compra con Stripe
+
+        // Crea una carga en Stripe con el token y el monto total
+        const charge = await stripe.charges.create({
+            amount: carrito.total * 100, // El monto se debe proporcionar en centavos
+            currency: 'ars', // Cambia a la moneda que prefieras
+            source: token,
+            description: 'Compra en Tienda Tecnologica',
+        });
+
+        // Actualiza el estado de la orden, envía el correo electrónico, etc.
+
+        res.status(201).json({
+            message: 'Compra completada con éxito',
+            OrderId: nuevaOrden._id,
+            success: true,
+            productsNotPurchased: [],
+        });
+    } catch (error) {
+        req.logger.error('Error en el servidor:', error);
+        res.status(500).json({ success: false, mensaje: 'Error en el servidor al finalizar la compra con Stripe' });
+    }
+}
+
 module.exports = {
     addToCart,
     viewCartPage,
@@ -289,4 +325,6 @@ module.exports = {
     clearCart,
     removeProductFromCart,
     updateProductQuantity,
+    renderDataPurchase,
+    completePurchaseWithStripe,
 };
