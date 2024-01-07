@@ -1,9 +1,7 @@
 const bcrypt = require('bcryptjs');
 const userDao = require('../dao/user.dao');
-const path = require('path');
 const { userModel } = require('../models/user.model');
 const errorHandlers = require('../services/errors/errorHandler');
-const { getUserRoleFromDatabase } = require('../utils/function');
 
 //Renderizar la página de registro
 function renderRegisterPage(req, res) {

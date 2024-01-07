@@ -1,0 +1,97 @@
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+/* Estilos generales del navbar */
+.navbar {
+    background: radial-gradient(circle at 10% 20%, rgb(69, 86, 102) 0%, rgb(34, 34, 34) 90%);
+    height: 80px;
+    color: #fff;
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 20px;
+    align-items: center;
+}
+
+/* Estilos del texto a la izquierda */
+.navbar-left {
+    font-size: 1.5rem;
+}
+
+/* Estilos de los enlaces a la derecha */
+.navbar-right {
+    display: flex;
+    align-items: center;
+}
+
+/* Estilos de los enlaces de navegación */
+.navbar-link {
+    text-decoration: none;
+    color: #fff;
+    margin-right: 20px;
+    font-size: 1rem;
+}
+
+.navbar-logo {
+    text-decoration: none;
+    color: #fff;
+    margin-right: 20px;
+}
+
+/* Estilos para el enlace de cerrar sesión */
+.logout-link {
+    display: flex;
+    align-items: center;
+}
+
+/* Estilos para el ícono de cerrar sesión */
+.icon {
+    font-size: 1.2rem;
+    margin-right: 5px;
+}
+
+.container {
+    width: 80%;
+    margin: auto;
+}
+
+h1 {
+    color: #007bff;
+}
+
+form {
+    margin-top: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    box-sizing: border-box;
+}
+
+#card-element {
+    margin-bottom: 20px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+#submit-button {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}

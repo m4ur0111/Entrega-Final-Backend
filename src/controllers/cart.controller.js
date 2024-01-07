@@ -1,3 +1,4 @@
+require('dotenv').config();
 const Carrito = require('../models/cart.model');
 const Order = require('../models/order.model');
 const Producto = require('../models/products.models');
@@ -6,7 +7,9 @@ const generateCode = require('../utils/function');
 const { getUserRoleFromDatabase } = require('../utils/function');
 const moment = require('moment-timezone');
 const errorDictionary = require('../services/errors/errorDictionary')
-const stripe = require('stripe')('sk_test_51LXfAzCYV7e1Kxbt0g4Q7rFukBRrrBwHXDGjAYpLBRflp0MKW');
+const { userModel } = require('../models/user.model');
+const stripe = require('stripe')(process.env.KEY_STRIPE);
+const mongoose = require('mongoose');
 
 //Ruta POST para agregar un producto al carrito
 const addToCart = async (req, res) => {
@@ -110,8 +113,8 @@ async function viewCartPage(req, res) {
         res.render('cart', { carrito, detallesDelCarrito });
 
     } catch (error) {
-        req.logger.error('Error en el servidor:', error);
-        res.status(500).json({ mensaje: 'Error en el servidor' });
+        console.error('Error en viewCartPage:', error);
+        res.status(500).json({ mensaje: 'Error en el servidor', error: error.message });
     }
 }
 
@@ -120,62 +123,83 @@ function viewBuyCompletePage(req, res) {
     res.render('buy-complete');
 }
 
-//Ruta POST para finalizar la compra
 async function completePurchase(req, res) {
     try {
         const userId = req.session.userId;
-        const purchaserEmail = req.session.email;
 
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
+            return res.status(400).json({ message: 'ID de usuario no válido' });
+        }
+
+        const purchaserEmail = req.session.email;
         const carrito = await cartDao.getCartByUserId(userId);
 
         if (!carrito || carrito.productos.length === 0) {
             return res.status(400).json({ message: errorMessages.carritoVacio });
         }
 
-        //Define el uso horario de Argentina
         const argentinaTimezone = 'America/Argentina/Buenos_Aires';
         const argentinaDateTime = moment.tz(new Date(), argentinaTimezone);
-        //Genera un código de ticket único
         const uniqueTicketCode = await generateCode.generateUniqueTicketCode();
 
-        //Crea un nuevo ticket
         const nuevoTicket = {
-            code: uniqueTicketCode, //Usar el código generado
+            code: uniqueTicketCode,
             purchase_datetime: argentinaDateTime.toDate(),
-            purchaser: purchaserEmail, 
+            purchaser: purchaserEmail,
         };
 
         const productosNoComprados = [];
 
-        let nuevaOrden; 
+        let nuevaOrden;
         let idOrden;
 
-        //Recorre los productos en el carrito
+        // Crear una lista de artículos para Stripe
+        const lineItems = [];
+
         for (const productoEnCarrito of carrito.productos) {
+            // 2. Verifica si Producto.findById devuelve un objeto válido
             const producto = await Producto.findById(productoEnCarrito.producto);
 
-            if (producto && producto.stock >= productoEnCarrito.cantidad) {
-                //restar stock del producto y continuar
-                producto.stock -= productoEnCarrito.cantidad;
-                await producto.save();
-
-                //Crear una nueva orden con el producto
-                nuevaOrden = new Order({
-                    usuario: userId,
-                    productos: [productoEnCarrito],
-                    total: productoEnCarrito.precioUnitario * productoEnCarrito.cantidad,
-                    estado: 'aprobado',
-                    ticket: nuevoTicket,
-                });
-
-                await nuevaOrden.save();
-            } else {
-                //no restar el stock pero agregar el producto al carrito de productos no comprados
+            if (!producto || producto.stock < productoEnCarrito.cantidad) {
                 productosNoComprados.push(productoEnCarrito);
+                continue;  // Continuar con la siguiente iteración
             }
+
+            producto.stock -= productoEnCarrito.cantidad;
+            await producto.save();
+
+            // Crear una nueva orden con el producto
+            nuevaOrden = new Order({
+                usuario: userId,
+                productos: [productoEnCarrito],
+                total: productoEnCarrito.precioUnitario * productoEnCarrito.cantidad,
+                estado: 'pendiente',
+                ticket: nuevoTicket,
+            });
+
+            // 3. Asegúrate de que nuevaOrden.save() se complete correctamente
+            try {
+                await nuevaOrden.save();
+            } catch (error) {
+                console.error('Error al guardar la nueva orden:', error);
+                res.status(500).json({ message: 'Error al guardar la orden' });
+                return;  // Salir de la función para evitar más procesamiento
+            }
+
+            // Agregar artículo a la lista de artículos para Stripe
+            lineItems.push({
+                price_data: {
+                    currency: 'usd',
+                    product_data: {
+                        name: productoEnCarrito.nombre,
+                    },
+                    unit_amount: productoEnCarrito.precioUnitario * 100,
+                },
+                quantity: productoEnCarrito.cantidad,
+            });
         }
 
-        //Actualizar el carrito con los productos no comprados
+        // Actualizar el carrito con los productos no comprados
         carrito.productos = productosNoComprados;
         carrito.total = carrito.productos.reduce((total, productoEnCarrito) => total + productoEnCarrito.precioUnitario * productoEnCarrito.cantidad, 0);
         await cartDao.updateCart(carrito._id, carrito);
@@ -183,9 +207,18 @@ async function completePurchase(req, res) {
         idOrden = nuevaOrden && nuevaOrden._id;
 
         if (productosNoComprados.length === 0 && idOrden) {
+            // Crear una sesión de pago en Stripe
+            const session = await stripe.checkout.sessions.create({
+                payment_method_types: ['card'],
+                line_items: lineItems,
+                success_url: 'http://localhost:8080/', // URL a la que se redirige después de una compra exitosa
+                cancel_url: 'http://localhost:8080/login', // URL a la que se redirige si se cancela la compra
+            });
+
+            // Devolver la URL de la sesión de pago de Stripe
             res.status(201).json({
-                message: 'Compra completada con éxito',
-                OrderId: nuevaOrden._id,
+                message: 'Redireccionando a Stripe para completar la compra',
+                sessionId: session.id,
                 success: true,
                 productsNotPurchased: [],
             });
@@ -198,9 +231,92 @@ async function completePurchase(req, res) {
             });
         }
     } catch (error) {
-        req.logger.error('Error en el servidor:', error);
+        console.error('Error en el servidor:', error);
+        res.status(500).json({ message: 'Error en el servidor' });
     }
 }
+
+//Ruta POST para finalizar la compra
+// async function completePurchase(req, res) {
+//     try {
+//         const userId = req.session.userId;
+//         const purchaserEmail = req.session.email;
+
+//         const carrito = await cartDao.getCartByUserId(userId);
+
+//         if (!carrito || carrito.productos.length === 0) {
+//             return res.status(400).json({ message: errorMessages.carritoVacio });
+//         }
+
+//         //Define el uso horario de Argentina
+//         const argentinaTimezone = 'America/Argentina/Buenos_Aires';
+//         const argentinaDateTime = moment.tz(new Date(), argentinaTimezone);
+//         //Genera un código de ticket único
+//         const uniqueTicketCode = await generateCode.generateUniqueTicketCode();
+
+//         //Crea un nuevo ticket
+//         const nuevoTicket = {
+//             code: uniqueTicketCode, //Usar el código generado
+//             purchase_datetime: argentinaDateTime.toDate(),
+//             purchaser: purchaserEmail, 
+//         };
+
+//         const productosNoComprados = [];
+
+//         let nuevaOrden; 
+//         let idOrden;
+
+//         //Recorre los productos en el carrito
+//         for (const productoEnCarrito of carrito.productos) {
+//             const producto = await Producto.findById(productoEnCarrito.producto);
+
+//             if (producto && producto.stock >= productoEnCarrito.cantidad) {
+//                 //restar stock del producto y continuar
+//                 producto.stock -= productoEnCarrito.cantidad;
+//                 await producto.save();
+
+//                 //Crear una nueva orden con el producto
+//                 nuevaOrden = new Order({
+//                     usuario: userId,
+//                     productos: [productoEnCarrito],
+//                     total: productoEnCarrito.precioUnitario * productoEnCarrito.cantidad,
+//                     estado: 'aprobado',
+//                     ticket: nuevoTicket,
+//                 });
+
+//                 await nuevaOrden.save();
+//             } else {
+//                 //no restar el stock pero agregar el producto al carrito de productos no comprados
+//                 productosNoComprados.push(productoEnCarrito);
+//             }
+//         }
+
+//         //Actualizar el carrito con los productos no comprados
+//         carrito.productos = productosNoComprados;
+//         carrito.total = carrito.productos.reduce((total, productoEnCarrito) => total + productoEnCarrito.precioUnitario * productoEnCarrito.cantidad, 0);
+//         await cartDao.updateCart(carrito._id, carrito);
+
+//         idOrden = nuevaOrden && nuevaOrden._id;
+
+//         if (productosNoComprados.length === 0 && idOrden) {
+//             res.status(201).json({
+//                 message: 'Compra completada con éxito',
+//                 OrderId: nuevaOrden._id,
+//                 success: true,
+//                 productsNotPurchased: [],
+//             });
+//         } else {
+//             res.status(201).json({
+//                 message: 'Algunos productos no fueron comprados por falta de stock',
+//                 OrderId: nuevaOrden._id,
+//                 success: false,
+//                 productsNotPurchased: productosNoComprados,
+//             });
+//         }
+//     } catch (error) {
+//         req.logger.error('Error en el servidor:', error);
+//     }
+// }
 
 //Ruta DELETE para limpiar el carrito
 async function clearCart(req, res) {
@@ -281,42 +397,6 @@ async function updateProductQuantity(req, res) {
     }
 }
 
-function renderDataPurchase(req, res) {
-    res.render('buy-data');
-}
-
-async function completePurchaseWithStripe(req, res) {
-    try {
-        const userId = req.session.userId;
-        const purchaserEmail = req.session.email;
-        const { token, nombre, correo } = req.body;
-
-        const carrito = await cartDao.getCartByUserId(userId);
-
-        // Resto del código para crear la orden y realizar la compra con Stripe
-
-        // Crea una carga en Stripe con el token y el monto total
-        const charge = await stripe.charges.create({
-            amount: carrito.total * 100, // El monto se debe proporcionar en centavos
-            currency: 'ars', // Cambia a la moneda que prefieras
-            source: token,
-            description: 'Compra en Tienda Tecnologica',
-        });
-
-        // Actualiza el estado de la orden, envía el correo electrónico, etc.
-
-        res.status(201).json({
-            message: 'Compra completada con éxito',
-            OrderId: nuevaOrden._id,
-            success: true,
-            productsNotPurchased: [],
-        });
-    } catch (error) {
-        req.logger.error('Error en el servidor:', error);
-        res.status(500).json({ success: false, mensaje: 'Error en el servidor al finalizar la compra con Stripe' });
-    }
-}
-
 module.exports = {
     addToCart,
     viewCartPage,
@@ -325,6 +405,4 @@ module.exports = {
     clearCart,
     removeProductFromCart,
     updateProductQuantity,
-    renderDataPurchase,
-    completePurchaseWithStripe,
 };

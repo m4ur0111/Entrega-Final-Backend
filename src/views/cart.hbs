@@ -1,11 +1,12 @@
+<!-- views/cart.handlebars -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    {{!-- Link de Font Awesome --}}
+    <!-- Link de Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    {{!-- Link de Google Fonts --}}
+    <!-- Link de Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Comme:wght@100;200;300;400;500;600;700;800;900&family=Montserrat:wght@100;200;300;400;500;600;700&display=swap" rel="stylesheet">
@@ -38,45 +39,78 @@
 
         {{#if carrito}}
         <div class="carrito-container">
-        <div class="carrito-productos">
-            <!-- Itera sobre los productos en el carrito -->
-            {{#each carrito.productos}}
-            <div class="producto">
-            <!-- Imagen del producto a la izquierda -->
-            <img class="producto-imagen" src="{{this.imagen}}" alt="Imagen del producto">
-            <div class="producto-info">
-                <!-- Información del producto a la derecha -->
-                <h3 class="producto-nombre">{{this.nombre}}</h3>
-                <p class="producto-precio">Precio: ${{this.precioUnitario}}</p>
-                <input type="number" class="cantidad-input" value="{{this.cantidad}}" min="1">
-                <!-- Agrega un botón de "Actualizar" con el ID del producto como atributo de datos -->
-                <button class="actualizar-cantidad-btn" data-product-id="{{this.producto}}">Actualizar</button>
-                <button class="eliminar-producto-btn" data-product-id="{{this._id}}">
-                    <i class="fas fa-trash"></i> Eliminar
-                </button>
+            <div class="carrito-productos">
+                <!-- Itera sobre los productos en el carrito -->
+                {{#each carrito.productos}}
+                    <div class="producto">
+                        <!-- Imagen del producto a la izquierda -->
+                        <img class="producto-imagen" src="{{this.imagen}}" alt="Imagen del producto">
+                        <div class="producto-info">
+                            <!-- Información del producto a la derecha -->
+                            <h3 class="producto-nombre">{{this.nombre}}</h3>
+                            <p class="producto-precio">Precio: ${{this.precioUnitario}}</p>
+                            <input type="number" class="cantidad-input" value="{{this.cantidad}}" min="1">
+                            <!-- Agrega un botón de "Actualizar" con el ID del producto como atributo de datos -->
+                            <button class="actualizar-cantidad-btn" data-product-id="{{this.producto}}">Actualizar</button>
+                            <button class="eliminar-producto-btn" data-product-id="{{this._id}}">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                        </div>
+                    </div>
+                {{/each}}
             </div>
+        
+            <!-- Precio total al final del carrito -->
+            <div class="total-carrito">
+                <p>Total del carrito: ${{carrito.total}}</p>
+                <!-- Botón para vaciar el carrito -->
+                <button id="vaciar-carrito-btn" class="vaciar-carrito">Vaciar Carrito</button>
+                <button id="ir-a-checkout-btn" class="finalizar-compra">Ir a Checkout</button>
             </div>
-            {{/each}}
-        </div>
-        <!-- Precio total al final del carrito -->
-        <div class="total-carrito">
-            <p>Total del carrito: ${{carrito.total}}</p>
-            <!-- Botón para vaciar el carrito -->
-            <button id="vaciar-carrito-btn" class="vaciar-carrito">Vaciar Carrito</button>
-            <!-- Contenedor para el elemento de tarjeta de Stripe -->
-            <div id="card-element"></div>
-            <button id="finalizar-compra-btn" class="finalizar-compra">Finalizar Compra</button>
-        </div>
         </div>
         {{else}}
         <p class="sin-productos">No hay productos en el carrito.</p>
         {{/if}}
 
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-        <script src="https://js.stripe.com/v3/"></script> <!-- Incluye la biblioteca de Stripe -->
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                $('#ir-a-checkout-btn').on('click', function () {
+                    var montoTotal = {{carrito.total}};
+
+                    var productosCarrito = [];
+                    {{#each carrito.productos}}
+                        productosCarrito.push({
+                            nombre: "{{this.nombre}}",
+                            descripcion: "{{this.descripcion}}",
+                            precioUnitario: {{this.precioUnitario}},
+                            cantidad: {{this.cantidad}}
+                        });
+                    {{/each}}
+
+                    var formData = new FormData();
+                    formData.append('montoTotal', montoTotal);
+                    formData.append('productosCarrito', JSON.stringify(productosCarrito));
+
+                    $.ajax({
+                        url: '/create-checkout-session',
+                        method: 'POST',
+                        processData: false,
+                        contentType: false,
+                        data: formData,
+                        success: function (response) {
+                            window.location.href = response.redirectUrl;
+                        },
+                        error: function (error) {
+                            console.error('Error al enviar datos al servidor:', error);
+                        }
+                    });
+                });
+            });
+        </script>
+
         <script src="./js/delete-cart.js"></script>
         <script src="./js/delete-product.js"></script>
-        <script src="./js/buy-complete.js"></script>
         <script src="./js/update-cart.js"></script>
 </body>
 </html>
