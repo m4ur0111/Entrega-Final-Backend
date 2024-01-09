@@ -13,7 +13,7 @@ const errorHandler = require('./services/errors/errorHandler');
 const { addDevelopmentLogger, addProductionLogger } = require('./services/logger/logger');
 
 // Configuración del puerto
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 8080;
 
 // Configuración de Express
 app.set("view engine", "hbs");
