@@ -19,7 +19,7 @@ const userSchema = new mongoose.Schema({
     profilePhoto: { type: String }
 });
 
-// Agregar el método personalizado findById
+//Agrego el método personalizado findById
 userSchema.statics.findById = function(id, callback) {
     return this.findOne({ _id: id }, callback);
 };

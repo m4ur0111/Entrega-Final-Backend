@@ -37,7 +37,6 @@ async function createOrder(newOrderData) {
     }
 }
 
-// En cartDao
 async function getProductQuantityInCart(userId, productoId) {
     try {
         const carrito = await Carrito.findOne({ usuario: userId });

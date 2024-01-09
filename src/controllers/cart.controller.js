@@ -26,7 +26,7 @@ const addToCart = async (req, res) => {
 
         const quantityDesdeCliente = parseInt(req.body.quantity);
 
-        // Verificar stock antes de agregar al carrito
+        //Verificar stock antes de agregar al carrito
         const stockAvailable = await verificarStock(productoId, quantityDesdeCliente);
 
         if (!stockAvailable) {
@@ -49,13 +49,6 @@ const addToCart = async (req, res) => {
         console.log('User Role:', userRole);
         console.log('Producto en Carrito:', productoEnCarrito);
         console.log('Producto:', producto);
-
-        // //Verifica si el producto pertenece al usuario actual
-        // if (producto && producto.owner && producto.owner.equals(userId)) {
-        //     return res.status(403).json({
-        //         message: 'No puedes agregar tus propios productos al carrito.',
-        //     });
-        // }
 
         if (isPremium) {
             //Si el usuario es premium, verifica si el producto pertenece a otro usuario premium
@@ -113,15 +106,15 @@ const addToCart = async (req, res) => {
 //Función para verificar stock
 const verificarStock = async (productoId, cantidadUsuario) => {
     try {
-        // Obtener el producto de la base de datos
+        //Obtener el producto de la base de datos
         const producto = await ProductDao.findProductById(productoId);
 
         if (!producto || producto.stock < cantidadUsuario) {
-            // Si el producto no existe o la cantidad seleccionada por el usuario supera el stock
+            //Si el producto no existe o la cantidad seleccionada por el usuario supera el stock
             return false;
         }
 
-        // Si la cantidad seleccionada por el usuario es menor o igual al stock disponible
+        //Si la cantidad seleccionada por el usuario es menor o igual al stock disponible
         return true;
     } catch (error) {
         console.error('Error al verificar stock:', error);
@@ -187,22 +180,22 @@ async function completePurchase(req, res) {
         let nuevaOrden;
         let idOrden;
 
-        // Crear una lista de artículos para Stripe
+        //Crear una lista de artículos para Stripe
         const lineItems = [];
 
         for (const productoEnCarrito of carrito.productos) {
-            // 2. Verifica si Producto.findById devuelve un objeto válido
+            //Verifica si Producto.findById devuelve un objeto válido
             const producto = await Producto.findById(productoEnCarrito.producto);
 
             if (!producto || producto.stock < productoEnCarrito.cantidad) {
                 productosNoComprados.push(productoEnCarrito);
-                continue;  // Continuar con la siguiente iteración
+                continue; 
             }
 
             producto.stock -= productoEnCarrito.cantidad;
             await producto.save();
 
-            // Crear una nueva orden con el producto
+            //Crea una nueva orden con el producto
             nuevaOrden = new Order({
                 usuario: userId,
                 productos: [productoEnCarrito],
@@ -211,16 +204,15 @@ async function completePurchase(req, res) {
                 ticket: nuevoTicket,
             });
 
-            // 3. Asegúrate de que nuevaOrden.save() se complete correctamente
             try {
                 await nuevaOrden.save();
             } catch (error) {
                 console.error('Error al guardar la nueva orden:', error);
                 res.status(500).json({ message: 'Error al guardar la orden' });
-                return;  // Salir de la función para evitar más procesamiento
+                return; 
             }
 
-            // Agregar artículo a la lista de artículos para Stripe
+            //Agrega artículo a la lista de artículos para Stripe
             lineItems.push({
                 price_data: {
                     currency: 'usd',
@@ -233,7 +225,7 @@ async function completePurchase(req, res) {
             });
         }
 
-        // Actualizar el carrito con los productos no comprados
+        //Actualizar el carrito con los productos no comprados
         carrito.productos = productosNoComprados;
         carrito.total = carrito.productos.reduce((total, productoEnCarrito) => total + productoEnCarrito.precioUnitario * productoEnCarrito.cantidad, 0);
         await cartDao.updateCart(carrito._id, carrito);
@@ -241,15 +233,14 @@ async function completePurchase(req, res) {
         idOrden = nuevaOrden && nuevaOrden._id;
 
         if (productosNoComprados.length === 0 && idOrden) {
-            // Crear una sesión de pago en Stripe
+            //Crea una sesión de pago en Stripe
             const session = await stripe.checkout.sessions.create({
                 payment_method_types: ['card'],
                 line_items: lineItems,
-                success_url: 'http://localhost:8080/', // URL a la que se redirige después de una compra exitosa
-                cancel_url: 'http://localhost:8080/login', // URL a la que se redirige si se cancela la compra
+                success_url: 'http://localhost:8080/', 
+                cancel_url: 'http://localhost:8080/login', 
             });
 
-            // Devolver la URL de la sesión de pago de Stripe
             res.status(201).json({
                 message: 'Redireccionando a Stripe para completar la compra',
                 sessionId: session.id,
@@ -269,88 +260,6 @@ async function completePurchase(req, res) {
         res.status(500).json({ message: 'Error en el servidor' });
     }
 }
-
-//Ruta POST para finalizar la compra
-// async function completePurchase(req, res) {
-//     try {
-//         const userId = req.session.userId;
-//         const purchaserEmail = req.session.email;
-
-//         const carrito = await cartDao.getCartByUserId(userId);
-
-//         if (!carrito || carrito.productos.length === 0) {
-//             return res.status(400).json({ message: errorMessages.carritoVacio });
-//         }
-
-//         //Define el uso horario de Argentina
-//         const argentinaTimezone = 'America/Argentina/Buenos_Aires';
-//         const argentinaDateTime = moment.tz(new Date(), argentinaTimezone);
-//         //Genera un código de ticket único
-//         const uniqueTicketCode = await generateCode.generateUniqueTicketCode();
-
-//         //Crea un nuevo ticket
-//         const nuevoTicket = {
-//             code: uniqueTicketCode, //Usar el código generado
-//             purchase_datetime: argentinaDateTime.toDate(),
-//             purchaser: purchaserEmail, 
-//         };
-
-//         const productosNoComprados = [];
-
-//         let nuevaOrden; 
-//         let idOrden;
-
-//         //Recorre los productos en el carrito
-//         for (const productoEnCarrito of carrito.productos) {
-//             const producto = await Producto.findById(productoEnCarrito.producto);
-
-//             if (producto && producto.stock >= productoEnCarrito.cantidad) {
-//                 //restar stock del producto y continuar
-//                 producto.stock -= productoEnCarrito.cantidad;
-//                 await producto.save();
-
-//                 //Crear una nueva orden con el producto
-//                 nuevaOrden = new Order({
-//                     usuario: userId,
-//                     productos: [productoEnCarrito],
-//                     total: productoEnCarrito.precioUnitario * productoEnCarrito.cantidad,
-//                     estado: 'aprobado',
-//                     ticket: nuevoTicket,
-//                 });
-
-//                 await nuevaOrden.save();
-//             } else {
-//                 //no restar el stock pero agregar el producto al carrito de productos no comprados
-//                 productosNoComprados.push(productoEnCarrito);
-//             }
-//         }
-
-//         //Actualizar el carrito con los productos no comprados
-//         carrito.productos = productosNoComprados;
-//         carrito.total = carrito.productos.reduce((total, productoEnCarrito) => total + productoEnCarrito.precioUnitario * productoEnCarrito.cantidad, 0);
-//         await cartDao.updateCart(carrito._id, carrito);
-
-//         idOrden = nuevaOrden && nuevaOrden._id;
-
-//         if (productosNoComprados.length === 0 && idOrden) {
-//             res.status(201).json({
-//                 message: 'Compra completada con éxito',
-//                 OrderId: nuevaOrden._id,
-//                 success: true,
-//                 productsNotPurchased: [],
-//             });
-//         } else {
-//             res.status(201).json({
-//                 message: 'Algunos productos no fueron comprados por falta de stock',
-//                 OrderId: nuevaOrden._id,
-//                 success: false,
-//                 productsNotPurchased: productosNoComprados,
-//             });
-//         }
-//     } catch (error) {
-//         req.logger.error('Error en el servidor:', error);
-//     }
-// }
 
 //Ruta DELETE para limpiar el carrito
 async function clearCart(req, res) {

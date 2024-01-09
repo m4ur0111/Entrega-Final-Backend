@@ -63,7 +63,7 @@ const completePurchase = async (req, res) => {
 
         console.log(success_url)
         console.log(cancel_url)
-        // Llama a handleSuccessfulPayment pasando userId y purchaserEmail
+        //Llamo a handleSuccessfulPayment pasando los datos necesarios
         const paymentResult = await handleSuccessfulPayment(carrito, userId, purchaserEmail, success_url, cancel_url);
         console.log(paymentResult);
 
@@ -78,16 +78,16 @@ const completePurchase = async (req, res) => {
 const handleSuccessfulPayment = async (carrito, userId, purchaserEmail, success_url, cancel_url) => {
     try {
         if (success_url === 'http://localhost:8080/completado') {
-            // Define el uso horario de Argentina
+            //Defino el uso de horario de Argentina
             const argentinaTimezone = 'America/Argentina/Buenos_Aires';
             const argentinaDateTime = moment.tz(new Date(), argentinaTimezone);
 
-            // Genera un código de ticket único
+            //Genero un código de ticket único
             const uniqueTicketCode = await generateCode.generateUniqueTicketCode();
 
-            // Crea un nuevo ticket
+            //Creo un nuevo ticket
             const nuevoTicket = {
-                code: uniqueTicketCode, // Usar el código generado
+                code: uniqueTicketCode,
                 purchase_datetime: argentinaDateTime.toDate(),
                 purchaser: purchaserEmail,
             };
@@ -97,20 +97,17 @@ const handleSuccessfulPayment = async (carrito, userId, purchaserEmail, success_
             let nuevaOrden;
             let idOrden;
 
-            // Ejemplo de cómo podrías usar mongoose.Types.ObjectId.isValid
             const ownerId = mongoose.Types.ObjectId.isValid(userId) ? userId : null;
 
-            // Crea o actualiza documentos en la colección products
             for (const productoEnCarrito of carrito.productos) {
                 const producto = await Producto.findById(productoEnCarrito.producto);
 
                 if (producto && producto.stock >= productoEnCarrito.cantidad) {
-                    // Resta el stock del producto y continúa
                     producto.stock -= productoEnCarrito.cantidad;
-                    producto.owner = ownerId;  // Asegúrate de asignar un ObjectId válido
+                    producto.owner = ownerId; 
                     await producto.save();
 
-                    // Crea una nueva orden con el producto
+                    //Creo una nueva orden con el producto
                     nuevaOrden = new Order({
                         usuario: ownerId,
                         productos: [productoEnCarrito],
@@ -125,14 +122,13 @@ const handleSuccessfulPayment = async (carrito, userId, purchaserEmail, success_
                 }
             }
 
-            // Actualiza el carrito con los productos no comprados
             carrito.productos = productosNoComprados;
             carrito.total = carrito.productos.reduce((total, productoEnCarrito) => total + productoEnCarrito.precioUnitario * productoEnCarrito.cantidad, 0);
             await cartDao.updateCart(carrito._id, carrito);
 
             idOrden = nuevaOrden && nuevaOrden._id;
 
-            // Envía un correo al usuario notificándole que la compra ha sido recibida correctamente
+            //Envía un correo al usuario notificándole que la compra ha sido recibida correctamente
             const userEmail = purchaserEmail;
             const subject = 'Compra recibida exitosamente';
             const message = '¡Gracias por tu compra! Tu pedido ha sido recibido correctamente.';

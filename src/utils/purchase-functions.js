@@ -1,5 +1,3 @@
-
-
 async function verificarStockAntesDePagar(userId) {
     try {
         const carrito = await cartDao.getCartByUserId(userId);
@@ -14,16 +12,15 @@ async function verificarStockAntesDePagar(userId) {
             const producto = await Producto.findById(productoEnCarrito.producto);
 
             if (producto && producto.stock >= productoEnCarrito.cantidad) {
-                // Restar stock del producto y continuar
+                //Resto stock del producto
                 producto.stock -= productoEnCarrito.cantidad;
                 await producto.save();
             } else {
-                // No restar el stock pero agregar el producto al carrito de productos no comprados
                 productosNoComprados.push(productoEnCarrito);
             }
         }
 
-        // Actualizar el carrito con los productos no comprados
+        //Actualizo el carrito con los productos no comprados
         carrito.productos = productosNoComprados;
         carrito.total = carrito.productos.reduce((total, productoEnCarrito) => total + productoEnCarrito.precioUnitario * productoEnCarrito.cantidad, 0);
         await cartDao.updateCart(carrito._id, carrito);
@@ -60,7 +57,7 @@ async function generarOrdenYLimpiarCarrito(userId, purchaserEmail, carrito) {
 
         await nuevaOrden.save();
 
-        // Limpiar el carrito
+        //Limpio el carrito
         carrito.productos = [];
         carrito.total = 0;
         await cartDao.updateCart(carrito._id, carrito);

@@ -32,7 +32,6 @@ async function getProducts(req, res) {
 
         const result = await Producto.paginate(queryOptions, options);
 
-        // Obtén la información sobre el rol del usuario
         const userId = req.session.userId;
         const userRole = await getUserRoleFromDatabase(userId);
 
@@ -59,9 +58,9 @@ async function addProduct(req, res) {
     try {
         const nuevoProducto = req.body;
 
-        // Añadir automáticamente el email del usuario al producto
         const userId = req.session.userId;
-        // Verifica si el producto se creó con éxito
+
+        //Verifico si el producto se creó con éxito
         if (userId) {
             nuevoProducto.owner = userId;
             const productoCreado = await productDao.createProduct(nuevoProducto);
@@ -107,14 +106,14 @@ async function editProduct(req, res) {
         const productoActualizado = await productDao.updateProduct(productId, updatedProductData);
 
         if (!productoActualizado) {
-            errorHandlers.customErrorHandler('productoNoActualizado', res); //Manejo de error personalizado
+            errorHandlers.customErrorHandler('productoNoActualizado', res);
         } else {
             //Producto actualizado con éxito
             res.redirect(`/product/edit/${productoActualizado._id}`);
         }
     } catch (error) {
         req.logger.error('Error en el servidor:', error);
-        errorHandlers.customErrorHandler('errorServidor', res); //Manejo de error personalizado
+        errorHandlers.customErrorHandler('errorServidor', res);
     }
 }
 
@@ -140,10 +139,10 @@ async function getMyProducts(req, res) {
     try {
         const userId = req.session.userId;
 
-        // Obtener productos del usuario
+        //Obtengo productos del usuario
         const userProducts = await productDao.getProductsByUserId(userId);
 
-        // Renderizar la vista con los productos del usuario
+        //Renderizo la vista con los productos del usuario
         res.render('my-products', { productos: userProducts });
     } catch (error) {
         req.logger.error('Error en el servidor:', error);
@@ -155,25 +154,21 @@ async function deleteProduct(req, res) {
     try {
         const productId = req.params.productId;
 
-        // Verifica si el ID del producto es válido
+        //Verifico si el ID del producto es válido
         if (!mongoose.Types.ObjectId.isValid(productId)) {
             return res.status(400).json({ success: false, mensaje: 'ID de producto inválido' });
         }
 
-        // Obtener información del producto antes de eliminarlo
         const productToDelete = await Producto.findById(productId);
 
-        // Eliminar el producto por su ID
         const deletedProduct = await Producto.findByIdAndDelete(productId);
 
         if (!deletedProduct) {
-            // El producto no fue encontrado
             return res.status(404).json({ success: false, mensaje: 'Producto no encontrado' });
         }
 
-        // Verificar si el usuario es premium y enviar correo
+        //Verifica si el usuario es premium y enviar correo
         if (productToDelete.userIsPremium) {
-            // Llama a la función deleteProductUser con los datos necesarios
             sendEmail.deleteProductUser({ email: productToDelete.ownerEmail }, (error, resultado) => {
                 if (error) {
                     console.log('Error al enviar el correo de eliminación de producto:', error);
@@ -183,10 +178,8 @@ async function deleteProduct(req, res) {
             });
         }
 
-        // Producto eliminado con éxito
         res.status(200).json({ success: true, mensaje: 'Producto eliminado con éxito' });
     } catch (error) {
-        // Imprime el error en la consola para depuración
         console.error('Error en el servidor:', error);
         res.status(500).json({ success: false, mensaje: 'Error en el servidor al eliminar el producto' });
     }

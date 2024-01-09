@@ -8,9 +8,6 @@ const { requireLogin } = require('../middleware/authMiddleware');
 //Ruta GET para la página de carrito
 router.get('/cart', cartController.viewCartPage);
 
-//Ruta GET para la página de compra completada
-// router.get('/completado', requireLogin, cartController.viewBuyCompletePage);
-
 //Ruta POST para agregar un producto al carrito
 router.post('/agregar-al-carrito/:productoId', cartController.addToCart);
 

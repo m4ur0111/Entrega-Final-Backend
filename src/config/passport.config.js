@@ -13,7 +13,6 @@ const initializePassport = () => {
         },
         async (accessToken, refreshToken, profile, done) => {
             try {
-                // console.log(profile)
             
                 let user = await userService.findOne({ email: profile._json.email });
                 if (!user) {

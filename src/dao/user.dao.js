@@ -14,7 +14,7 @@ async function createUser({ nombre, apellido, edad, email, pass }) {
     try {
         const usuarioExistente = await findUserByEmail(email);
         if (usuarioExistente) {
-            return null; // Usuario ya existe
+            return null; 
         }
 
         const hashedPass = await bcrypt.hash(pass, 10);

@@ -3,7 +3,7 @@ Proyecto final del curso de backend sobre la realizacion de un ecommerce funcion
 Almacenado en Railway.app: entrega-final-backend-production-c304.up.railway.app
 
 ## Instalación
-1. Clona el repositorio.
+1. Clonar el repositorio con `git clone https://github.com/m4ur0111/Entrega-Final-Backend.git`
 2. Instala las dependencias con `npm install`.
 3. Inicia el servidor de express con `npm start`.
 4. Inicia el proyecto en el navegador de tu elección introduciendo `http://localhost:8080/`.

@@ -3,16 +3,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (vaciarCarritoBtn) {
         vaciarCarritoBtn.addEventListener('click', () => {
-            // Realiza una solicitud DELETE al servidor para limpiar el carrito
+            //Realizo una solicitud DELETE al servidor para limpiar el carrito
             fetch('/limpiar-carrito', {
                 method: 'DELETE',
             })
             .then(response => {
                 if (response.status === 204) {
-                    // La solicitud fue exitosa, redirige a la página principal
+                    //La solicitud fue exitosa, redirige a la página principal
                     window.location.href = '/';
                 } else {
-                    // Handle any errors or show a message to the user
                     console.error('Error al vaciar el carrito.');
                 }
             })

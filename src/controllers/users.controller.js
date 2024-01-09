@@ -24,14 +24,13 @@ async function registerUser(req, res) {
         });
 
         if (!usuarioCreado) {
-            errorHandlers.customErrorHandler('usuarioExistente', res); //Manejo de error personalizado
+            errorHandlers.customErrorHandler('usuarioExistente', res);
         } else {
             req.logger.info('Usuario registrado con éxito:', email);
             res.redirect('login');
         }
     } catch (error) {
         req.logger.error('Error en el servidor:', error);
-        // errorHandlers.customErrorHandler('errorServidor', res); //Manejo de error personalizado
     }
 }
 
@@ -47,14 +46,14 @@ async function loginUser(req, res) {
         const usuario = await userDao.findUserByEmail(email);
 
         if (!usuario) {
-            errorHandlers.customErrorHandler('usuarioNoEncontrado', res); //Manejo de error personalizado
+            errorHandlers.customErrorHandler('usuarioNoEncontrado', res);
         } else {
             const isPasswordValid = bcrypt.compare(pass, usuario.pass);
 
             if (!isPasswordValid) {
-                errorHandlers.customErrorHandler('contrasenaIncorrecta', res); //Manejo de error personalizado
+                errorHandlers.customErrorHandler('contrasenaIncorrecta', res); 
             } else {
-                // Actualiza la última conexión al iniciar sesión
+                //Actualizo la última conexión al iniciar sesión
                 usuario.last_connection = new Date();
                 await usuario.save();
 
@@ -71,7 +70,7 @@ async function loginUser(req, res) {
 //Cerrar la sesión del usuario
 async function logoutUser(req, res) {
     try {
-        // Actualiza la última conexión al cerrar sesión
+        //Actualizo la última conexión al cerrar sesión
         const userId = req.session.userId;
         if (userId) {
             const usuario = await userModel.findById(userId);
@@ -100,7 +99,7 @@ async function renderProfile(req, res) {
         const userId = req.session.userId;
         const usuario = await userModel.findById(userId);
 
-        // Verificar si el usuario tiene documentos cargados
+        //Verifica si el usuario tiene documentos cargados
         const hasDocuments = usuario.documents && usuario.documents.length > 0;
 
         res.render('perfil', {
@@ -143,7 +142,7 @@ async function checkUserRole(userId) {
     try {
         const user = await userModel.findById(userId);
 
-        // Verificar si el array documents tiene exactamente 3 elementos
+        //Verifica si el array documents tiene exactamente 3 elementos
         return user && user.documents && user.documents.length === 3;
     } catch (error) {
         console.error(error);
@@ -157,14 +156,13 @@ async function changeUserRole(req, res) {
         const userIdToUpdate = req.body.userIdToUpdate;
         const newRole = req.body.newRole;
 
-        // Verifica si el usuario al que le estás cambiando el rol tiene los documentos cargados
+        //Verifica si el usuario al que le estás cambiando el rol tiene los documentos cargados
         const hasRequiredDocuments = await checkUserRole(userIdToUpdate);
 
         if (!hasRequiredDocuments) {
             return res.status(400).json({ message: 'El usuario no tiene los documentos requeridos cargados.' });
         }
 
-        // Verifica si el nuevo rol es válido (user o premium)
         if (newRole !== 'user' && newRole !== 'premium') {
             return res.status(400).json({ message: 'Rol no válido. Use "user" o "premium".' });
         }
@@ -201,12 +199,11 @@ async function uploadDocuments(req, res) {
             return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
         }
 
-        // Verificar si se están subiendo documentos
+        //Verifica si se están subiendo documentos
         if (!req.files || req.files.length === 0) {
             return res.status(400).json({ success: false, message: 'No se han proporcionado documentos' });
         }
 
-        // Lógica para manejar los documentos subidos
         const newDocuments = req.files.map(file => {
             return {
                 name: file.originalname,
@@ -214,13 +211,12 @@ async function uploadDocuments(req, res) {
             };
         });
 
-        // Agregar los nuevos documentos al array si no existen
         for (const newDoc of newDocuments) {
             const existingDocIndex = user.documents.findIndex(doc => doc.name === newDoc.name);
             if (existingDocIndex === -1) {
                 user.documents.push(newDoc);
             } else {
-                // Reemplazar el documento existente
+                //Reemplaza el documento existente
                 user.documents[existingDocIndex] = newDoc;
             }
         }
@@ -238,10 +234,10 @@ async function uploadDocuments(req, res) {
 async function updateToPremium(req, res) {
     try {
         const userId = req.params.uid;
-    
-        // Verifica si el usuario ha cargado los documentos requeridos
+
+        //Verifica si el usuario ha cargado los documentos requeridos
         const user = await userModel.findById(userId);
-    
+
         const requiredDocuments = ['identificacion.pdf', 'comprobantedomicilio.pdf', 'comprobanteestado.pdf'];
 
         const hasRequiredDocuments = requiredDocuments.every(docName =>
@@ -251,8 +247,7 @@ async function updateToPremium(req, res) {
         if (!hasRequiredDocuments) {
             return res.status(400).json({ message: 'Por favor, carga los documentos requeridos primero.' });
         }
-    
-        // Actualiza al usuario a premium
+
         user.rol = 'premium';
         await user.save();
     
@@ -279,19 +274,15 @@ async function getAllUsersWithBasicInfo(req, res) {
     }
 }
 
-// Modifica la función enviarCorreosAUsuariosEliminados
 async function enviarCorreosAUsuariosEliminados(usuarios) {
     if (usuarios && usuarios.deletedCount !== undefined) {
-        // Si usuarios es un objeto con deletedCount, entonces es el resultado de deleteMany
         console.log(`${usuarios.deletedCount} usuarios eliminados exitosamente.`);
 
         if (usuarios.deletedCount > 0) {
-            // Itera sobre los usuarios eliminados solo si se eliminaron algunos
             for (const usuario of usuarios.result) {
                 try {
                     const { nombre, email } = usuario;
 
-                    // Lógica para enviar el correo a cada usuario eliminado
                     await enviarCorreo({ nombre, email }, (error, resultado) => {
                         if (error) {
                             console.log(`Error al enviar correo a ${email}: ${error}`);
@@ -304,24 +295,18 @@ async function enviarCorreosAUsuariosEliminados(usuarios) {
                 }
             }
 
-            // Devuelve un objeto indicando que se eliminaron usuarios
             return { eliminados: true, cantidad: usuarios.deletedCount };
         } else {
             console.log('No se encontraron usuarios inactivos para eliminar.');
 
-            // Devuelve un objeto indicando que no se eliminaron usuarios
             return { eliminados: false, cantidad: 0 };
         }
     } else if (Array.isArray(usuarios)) {
-        // Si usuarios es un array, entonces es el resultado de find y no se eliminaron usuarios
         console.log('No se encontraron usuarios inactivos para eliminar.');
 
-        // Devuelve un objeto indicando que no se eliminaron usuarios
         return { eliminados: false, cantidad: 0 };
     } else {
         console.log('Resultado inesperado de deleteMany:', usuarios);
-
-        // Devuelve un objeto indicando un resultado inesperado
         return { eliminados: false, cantidad: 0 };
     }
 }
@@ -329,19 +314,17 @@ async function enviarCorreosAUsuariosEliminados(usuarios) {
 // Modifica la función eliminarUsuariosInactivos
 async function eliminarUsuariosInactivos(req, res) {
     try {
-        // Obtén la fecha actual menos 2 días
+        //Obtiene la fecha actual menos 2 días
         const fechaLimite = new Date(Date.now() - (2 * 24 * 60 * 60 * 1000));
 
-        // Construye la condición para encontrar usuarios inactivos
+        //Construyo la condición para encontrar usuarios inactivos
         const condicion = { last_connection: { $lt: fechaLimite } };
 
-        // Encuentra y elimina los usuarios inactivos
         const usuariosEliminados = await userModel.deleteMany(condicion);
 
-        // Envía correos electrónicos a los usuarios eliminados
+        //Envía correos electrónicos a los usuarios eliminados
         await enviarCorreosAUsuariosEliminados(usuariosEliminados);
 
-        // Responde con un objeto JSON indicando la cantidad de usuarios eliminados
         res.json({ cantidad: usuariosEliminados.deletedCount });
     } catch (error) {
         console.error('Error al eliminar usuarios inactivos:', error);
