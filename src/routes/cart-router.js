@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const Producto = require('../models/products.models');
 const router = express.Router();
 const cartController = require('../controllers/cart.controller');
 const { requireLogin } = require('../middleware/authMiddleware');

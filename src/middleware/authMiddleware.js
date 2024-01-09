@@ -11,7 +11,7 @@ function simulateAuthentication(req, res, next) {
     req.session = req.session || {};
     
     // Simular la autenticación estableciendo un ID de usuario en la sesión
-    req.session.userId = '650b88e5d7b093fdbfa05f4e'; // Reemplaza con el ID del usuario que deseas utilizar
+    req.session.userId = '650b88e5d7b093fdbfa05f4e';
 
     if (next) {
         next(); // Llama a next solo si está presente (se usa como middleware de Express)

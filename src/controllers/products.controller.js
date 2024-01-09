@@ -3,7 +3,7 @@ const productDao = require('../dao/products.dao');
 const Producto = require('../models/products.models');
 const errorHandlers = require('../services/errors/errorHandler');
 const { getUserRoleFromDatabase } = require('../utils/function');
-const nodemailer = require('nodemailer');
+const sendEmail = require('../controllers/messages.controller');
 
 //Ruta GET para obtener los productos con variables
 async function getProducts(req, res) {
@@ -173,29 +173,12 @@ async function deleteProduct(req, res) {
 
         // Verificar si el usuario es premium y enviar correo
         if (productToDelete.userIsPremium) {
-            // Configurar el servicio de correo (Ejemplo usando Gmail)
-            const transporter = nodemailer.createTransport({
-                service: 'gmail',
-                auth: {
-                    user: 'tu_correo@gmail.com',
-                    pass: 'tu_contraseña'
-                }
-            });
-
-            // Configurar el correo electrónico
-            const mailOptions = {
-                from: 'tu_correo@gmail.com',
-                to: productToDelete.userEmail,
-                subject: 'Producto eliminado',
-                text: `Tu producto ${productToDelete.productName} ha sido eliminado.`
-            };
-
-            // Enviar el correo electrónico
-            transporter.sendMail(mailOptions, function(error, info){
+            // Llama a la función deleteProductUser con los datos necesarios
+            sendEmail.deleteProductUser({ email: productToDelete.ownerEmail }, (error, resultado) => {
                 if (error) {
-                    console.error('Error al enviar el correo:', error);
+                    console.log('Error al enviar el correo de eliminación de producto:', error);
                 } else {
-                    console.log('Correo enviado:', info.response);
+                    console.log('Correo de eliminación de producto enviado con éxito:', resultado);
                 }
             });
         }

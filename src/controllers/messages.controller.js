@@ -51,7 +51,113 @@ function enviarCorreo({ nombre, email }, callback) {
                     <p class="greeting">Email: ${email}.</p>
                     <p class="message">Presione el botón para ser redirigido y proceder al restablecimiento de su contraseña.</p>
                     <a href="http://localhost:8080/restablecer-contrasena/${token}/${email}">Restablecer Contraseña</a>
-                    <!-- Agrega más contenido según tus necesidades -->
+                </div>
+            </body>
+            </html>
+        `,
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            console.log(error);
+            callback("Error de envío");
+        } else {
+            callback(null, "Correo enviado con éxito");
+        }
+    });
+}
+function generarContenidoCompraExitosa({ email }, callback) {
+
+    const mailOptions = {
+        from: process.env.USER_MAILER,
+        to: `${email}`,
+        subject: "Compra Exitosa",
+        html: `
+            <html>
+            <head>
+                <style>
+                    body {
+                        font-family: 'Arial', sans-serif;
+                        background-color: #f4f4f4;
+                        padding: 20px;
+                    }
+                    .container {
+                        background-color: #fff;
+                        border-radius: 8px;
+                        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                        padding: 20px;
+                    }
+                    .greeting {
+                        font-size: 24px;
+                        font-weight: bold;
+                        margin-bottom: 20px;
+                    }
+                    .message {
+                        font-size: 16px;
+                        line-height: 1.6;
+                        margin-bottom: 30px;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <h1>Tienda Tecnologica</h1>
+                    <p class="greeting">Hola ${email}.</p>
+                    <p class="message">Muchas gracias por confiar en nosotros, si tiene alguna consulta no dude en contactarnos.</p>
+                </div>
+            </body>
+            </html>
+        `,
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            console.log(error);
+            callback("Error de envío");
+        } else {
+            callback(null, "Correo enviado con éxito");
+        }
+    });
+}
+
+function deleteProductUser({ email }, callback) {
+
+    const mailOptions = {
+        from: process.env.USER_MAILER,
+        to: `${email}`,
+        subject: "Producto Eliminado",
+        html: `
+            <html>
+            <head>
+                <style>
+                    body {
+                        font-family: 'Arial', sans-serif;
+                        background-color: #f4f4f4;
+                        padding: 20px;
+                    }
+                    .container {
+                        background-color: #fff;
+                        border-radius: 8px;
+                        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                        padding: 20px;
+                    }
+                    .greeting {
+                        font-size: 24px;
+                        font-weight: bold;
+                        margin-bottom: 20px;
+                    }
+                    .message {
+                        font-size: 16px;
+                        line-height: 1.6;
+                        margin-bottom: 30px;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <h1>Tienda Tecnologica</h1>
+                    <p class="greeting">Hola ${email}.</p>
+                    <p class="message">Tu producto fue eliminado por un administrador.</p>
                 </div>
             </body>
             </html>
@@ -134,4 +240,4 @@ async function procesarContrasena(req, res) {
     }
 }
 
-module.exports = { enviarCorreo, sendMessage, resetPass, procesarContrasena };
+module.exports = { enviarCorreo, sendMessage, resetPass, procesarContrasena, generarContenidoCompraExitosa, deleteProductUser };

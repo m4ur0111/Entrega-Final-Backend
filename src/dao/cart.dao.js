@@ -37,9 +37,28 @@ async function createOrder(newOrderData) {
     }
 }
 
+// En cartDao
+async function getProductQuantityInCart(userId, productoId) {
+    try {
+        const carrito = await Carrito.findOne({ usuario: userId });
+        
+        if (!carrito) {
+            return 0; // Si no hay carrito, la cantidad es cero
+        }
+
+        const productoEnCarrito = carrito.productos.find((item) => item.producto.equals(productoId));
+
+        return productoEnCarrito ? productoEnCarrito.cantidad : 0;
+    } catch (error) {
+        throw error;
+    }
+}
+
+
 module.exports = {
     getCartByUserId,
     createCart,
     updateCart,
     createOrder,
+    getProductQuantityInCart,
 };

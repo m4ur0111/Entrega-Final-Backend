@@ -1,13 +1,13 @@
 require('dotenv').config();
 const Carrito = require('../models/cart.model');
 const Order = require('../models/order.model');
+const ProductDao = require('../dao/products.dao');
 const Producto = require('../models/products.models');
 const cartDao = require('../dao/cart.dao');
 const generateCode = require('../utils/function');
 const { getUserRoleFromDatabase } = require('../utils/function');
 const moment = require('moment-timezone');
-const errorDictionary = require('../services/errors/errorDictionary')
-const { userModel } = require('../models/user.model');
+const errorDictionary = require('../services/errors/errorDictionary');
 const stripe = require('stripe')(process.env.KEY_STRIPE);
 const mongoose = require('mongoose');
 
@@ -24,6 +24,15 @@ const addToCart = async (req, res) => {
             isPremium = true;
         }
 
+        const quantityDesdeCliente = parseInt(req.body.quantity);
+
+        // Verificar stock antes de agregar al carrito
+        const stockAvailable = await verificarStock(productoId, quantityDesdeCliente);
+
+        if (!stockAvailable) {
+            return res.status(400).json({ message: 'Producto sin stock disponible o cantidad no válida' });
+        }
+
         let carrito = await cartDao.getCartByUserId(userId);
 
         if (!carrito) {
@@ -36,12 +45,17 @@ const addToCart = async (req, res) => {
 
         const producto = await Producto.findById(productoId);
 
-        //Verifica si el producto pertenece al usuario actual
-        if (producto && producto.owner && producto.owner.equals(userId)) {
-            return res.status(403).json({
-                message: 'No puedes agregar tus propios productos al carrito.',
-            });
-        }
+        console.log('UserID:', userId);
+        console.log('User Role:', userRole);
+        console.log('Producto en Carrito:', productoEnCarrito);
+        console.log('Producto:', producto);
+
+        // //Verifica si el producto pertenece al usuario actual
+        // if (producto && producto.owner && producto.owner.equals(userId)) {
+        //     return res.status(403).json({
+        //         message: 'No puedes agregar tus propios productos al carrito.',
+        //     });
+        // }
 
         if (isPremium) {
             //Si el usuario es premium, verifica si el producto pertenece a otro usuario premium
@@ -82,7 +96,7 @@ const addToCart = async (req, res) => {
             }
         }
 
-        //Actualiza el total del carrito
+        // Actualiza el total del carrito
         carrito.total = carrito.productos.reduce((total, item) => {
             return total + item.cantidad * item.precioUnitario;
         }, 0);
@@ -91,10 +105,30 @@ const addToCart = async (req, res) => {
 
         res.redirect('/');
     } catch (error) {
-        req.logger.error('Error en el servidor:', error);
-        res.status(500).json({ message: errorDictionary.errorServidor });
+        console.error('Error en el servidor:', error);
+        res.status(500).json({ message: 'Error en el servidor' });
     }
 };
+
+//Función para verificar stock
+const verificarStock = async (productoId, cantidadUsuario) => {
+    try {
+        // Obtener el producto de la base de datos
+        const producto = await ProductDao.findProductById(productoId);
+
+        if (!producto || producto.stock < cantidadUsuario) {
+            // Si el producto no existe o la cantidad seleccionada por el usuario supera el stock
+            return false;
+        }
+
+        // Si la cantidad seleccionada por el usuario es menor o igual al stock disponible
+        return true;
+    } catch (error) {
+        console.error('Error al verificar stock:', error);
+        return false;
+    }
+};
+
 
 //Ruta GET para la página de carrito
 async function viewCartPage(req, res) {
