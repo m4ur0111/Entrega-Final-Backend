@@ -1,5 +1,6 @@
-# 4° Integrador Backend
-Cuarta practica integradora del curso de backend de CoderHouse orientado a la creación de un ecommerce con Express, MongoDB, Mongoose, Handlebars.
+# Proyecto Final Backend
+Proyecto final del curso de backend sobre la realizacion de un ecommerce funcional realizado con express, node, handlebars y stripe.
+Almacenado en Railway.app: entrega-final-backend-production-c304.up.railway.app
 
 ## Instalación
 1. Clona el repositorio.
@@ -24,3 +25,8 @@ Rol: admin,
 <Usuario premium>
 Email: userpremium@gmail.com
 Pass: UsuarioPremium
+
+<Datos de prueba para la tarjeta de stripe>
+Tarjeta Mastercard: 5555555555554444
+CVC: 553
+DATE: Cualquier fecha
