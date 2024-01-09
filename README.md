@@ -12,21 +12,21 @@ Almacenado en Railway.app: entrega-final-backend-production-c304.up.railway.app
 Para iniciar sesión hay 2 opciones diferentes, registrar un usuario desde 0 o ingresar con un usuario ya registrado:
 Hay 2 usuarios de ejemplo, aunque en el formulario pueden registrarse los usuarios que se deseen.
 
-<Usuario sin permisos:>
-Email: user@gmail.com,
-Pass: userCoderHouse,
-Rol: user,
+## Usuario sin permisos
+1. Email: user@gmail.com,
+2. Pass: userCoderHouse,
+3. Rol: user,
 
-<Usuario con permisos:>
-Email: admin@gmail.com,
-Pass: adminCoderHouse,
-Rol: admin,
+## Usuario con permisos
+1. Email: admin@gmail.com,
+2. Pass: adminCoderHouse,
+3. Rol: admin,
 
-<Usuario premium>
-Email: userpremium@gmail.com
-Pass: UsuarioPremium
+## Usuario premium
+1. Email: userpremium@gmail.com
+2. Pass: UsuarioPremium
 
-<Datos de prueba para la tarjeta de stripe>
-Tarjeta Mastercard: 5555555555554444
-CVC: 553
-DATE: Cualquier fecha
+## Datos de prueba para la tarjeta de stripe
+1. Tarjeta Mastercard: 5555555555554444
+2. CVC: 553
+3. DATE: Cualquier fecha
